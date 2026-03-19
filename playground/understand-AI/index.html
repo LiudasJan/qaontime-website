@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Neural Network Demo</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>How AI Thinks 🧠</h1>
+
+    <p>
+      This is a simple neural network that learns to tell if an animal is a <b>rabbit 🐇</b> or a <b>dog 🐶</b> based on two things:
+      <ul>
+        <li><b>Weight</b> in grams</li>
+        <li><b>Ear length</b> in centimeters</li>
+      </ul>
+      You can teach the AI using training data, then try new values to see what it predicts!
+    </p>
+
+    <div class="section">
+      <label for="training-data"><b>Training Data</b> (weight in grams, ears in cm, label):</label><br/>
+      <textarea id="training-data" rows="6" oninput="onTrainingDataChanged()">
+900,10,rabbit  
+925,10,rabbit  
+950,10,rabbit  
+975,10,rabbit  
+1000,10,rabbit  
+1025,10,rabbit  
+1050,10,rabbit  
+100,8,rabbit
+300,8,rabbit
+500,8,rabbit
+700,9,rabbit
+850,10,rabbit
+900,10,rabbit
+950,10,rabbit
+1000,10,rabbit
+1100,11,rabbit
+1300,12,rabbit
+1500,13,rabbit
+1700,14,rabbit
+1900,15,rabbit
+2100,15,rabbit
+2300,16,rabbit
+2500,17,rabbit
+2700,17,rabbit
+2900,18,rabbit
+3000,18,rabbit
+2800,19,rabbit
+2600,19,rabbit
+2400,20,rabbit
+2200,20,rabbit
+2000,1,dog
+2000,1,dog
+2000,3,dog
+2500,4,dog
+3000,4,dog
+3500,5,dog
+4000,5,dog
+4500,5,dog
+5000,6,dog
+5500,6,dog
+6000,6,dog
+6500,7,dog
+7000,7,dog
+7500,7,dog
+8000,8,dog
+8500,8,dog
+9000,8,dog
+9500,9,dog
+10000,9,dog
+11000,9,dog
+13000,10,dog
+15000,10,dog
+2200,10,dog
+2500,9,dog
+2800,10,dog
+      </textarea><br/>
+      <button onclick="trainModel()">Learn!</button>
+    </div>
+
+    <div class="section sliders">
+      <p><b>Try new animal features:</b></p>
+      <label>Weight (g): 
+        <input type="range" id="weight" min="0" max="10000" step="50" value="2000" oninput="updateInput()"/>
+        <span id="weight-val">2000</span>
+      </label>
+      <br/>
+      <label>Ears (cm): 
+        <input type="range" id="ears" min="1" max="20" step="1" value="10" oninput="updateInput()"/>
+        <span id="ears-val">10</span>
+      </label>
+      <br/>
+      <button id="predict-btn" onclick="predict()" disabled>
+        <span id="predict-text">What is it?</span>
+        <span id="spinner" style="display:none; margin-left: 10px;">⏳</span>
+      </button>
+    </div>
+
+    <div class="section">
+      <p id="output">AI thinks it's a: ❓</p>
+    </div>
+
+    <canvas id="network" width="600" height="300"></canvas>
+
+    <div class="section">
+      <h3>🧠 What are you seeing above?</h3>
+      <p>
+        The yellow bubbles are <b>neurons</b>. They take numbers (like weight or ear length), pass them through <b>math functions</b>,
+        and share their results with the next layer.
+      </p>
+      <p>
+        The more yellow a circle is, the more it is <b>activated</b>. This means it's reacting more strongly to the input.
+        The final layer has two neurons: one for 🐇 Rabbit and one for 🐶 Dog.
+      </p>
+      <p>
+        The number inside each circle shows how "active" that neuron is (from 0.00 to 1.00). The AI picks the one with the highest value.
+      </p>
+      <p>
+        For example, if the Rabbit neuron is 0.25 and Dog is 0.75 → AI says: it’s a Dog! 🐶
+      </p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
