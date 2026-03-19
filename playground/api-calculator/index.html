@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>API Calculator Demo</title>
+  <style>
+    :root{
+      --bg: #0b1020;
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.10);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.65);
+      --line: rgba(255,255,255,.10);
+      --shadow: 0 20px 60px rgba(0,0,0,.45);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body{
+      margin:0;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding: 24px;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+      background:
+        radial-gradient(1000px 600px at 20% 10%, rgba(92,180,255,.18), transparent 60%),
+        radial-gradient(900px 500px at 80% 20%, rgba(255,176,92,.16), transparent 55%),
+        radial-gradient(700px 500px at 50% 90%, rgba(134,92,255,.15), transparent 60%),
+        var(--bg);
+    }
+
+    .wrap{
+      width: min(920px, 100%);
+      display:grid;
+      gap: 18px;
+      grid-template-columns: 1.2fr .8fr;
+    }
+    @media (max-width: 860px){
+      .wrap{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background: linear-gradient(180deg, var(--card), rgba(255,255,255,.04));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow:hidden;
+    }
+
+    header{
+      padding: 20px 22px 12px;
+      border-bottom: 1px solid var(--line);
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    h1{
+      margin:0;
+      font-size: 18px;
+      letter-spacing:.2px;
+    }
+    .subtitle{
+      margin:0;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+    .badge{
+      font-size:12px;
+      color: rgba(255,255,255,.78);
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      padding: 6px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .content{
+      padding: 18px 22px 22px;
+      display:grid;
+      gap: 14px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 520px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    label{
+      font-size: 12px;
+      color: var(--muted);
+      display:block;
+      margin-bottom: 6px;
+    }
+    input, select{
+      width: 100%;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      outline:none;
+      font-size: 14px;
+    }
+    input:focus, select:focus{
+      border-color: rgba(92,180,255,.55);
+      box-shadow: 0 0 0 4px rgba(92,180,255,.14);
+    }
+
+    .actions{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    button{
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor:pointer;
+      transition: transform .06s ease, background .15s ease, border-color .15s ease;
+    }
+    button:hover{
+      background: rgba(255,255,255,.10);
+      border-color: rgba(255,255,255,.18);
+    }
+    button:active{ transform: translateY(1px); }
+    button.primary{
+      border-color: rgba(92,180,255,.45);
+      background: rgba(92,180,255,.18);
+    }
+    button.primary:hover{
+      background: rgba(92,180,255,.26);
+      border-color: rgba(92,180,255,.60);
+    }
+    button:disabled{
+      opacity: .55;
+      cursor:not-allowed;
+    }
+
+    .result{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 14px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.20);
+      border: 1px solid var(--line);
+    }
+    .result .label{
+      font-size: 12px;
+      color: var(--muted);
+      margin:0;
+    }
+    .result .value{
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing:.3px;
+    }
+
+    .note{
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .side{
+      padding: 18px 18px 16px;
+    }
+    .side h2{
+      margin: 0 0 10px;
+      font-size: 14px;
+      color: rgba(255,255,255,.86);
+      letter-spacing:.2px;
+    }
+    pre{
+      margin:0;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,.28);
+      color: rgba(255,255,255,.86);
+      overflow:auto;
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: pre;
+    }
+    .mini-actions{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .toast{
+      margin-top: 10px;
+      font-size: 12px;
+      color: rgba(255,255,255,.75);
+      display:none;
+    }
+    .toast.show{ display:block; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card">
+      <header>
+        <div class="title">
+          <h1>API Calculator</h1>
+          <p class="subtitle">Tiny UI → real API call. Perfect for demoing: “how much can you test *just UI*?”</p>
+        </div>
+        <div class="badge">POST /testing/calculate/</div>
+      </header>
+
+      <div class="content">
+        <div class="grid">
+          <div>
+            <label for="num1">Number 1</label>
+            <input id="num1" type="number" step="any" value="2" />
+          </div>
+          <div>
+            <label for="num2">Number 2</label>
+            <input id="num2" type="number" step="any" value="2" />
+          </div>
+        </div>
+
+        <div class="grid">
+          <div>
+            <label for="operation">Operation</label>
+            <select id="operation">
+              <option value="add">add</option>
+              <option value="subtract">subtract</option>
+              <option value="multiply">multiply</option>
+              <option value="divide">divide</option>
+            </select>
+          </div>
+          <div>
+            <label for="apikey">API key (header: apikey)</label>
+            <input id="apikey" type="text" value="any-random-string" />
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="btnCalc">Calculate</button>
+          <button id="btnReset" type="button">Reset</button>
+        </div>
+
+        <div class="result" aria-live="polite">
+          <div>
+            <p class="label">Result</p>
+            <div class="value" id="resultValue">—</div>
+          </div>
+          <div class="note" id="statusText">Ready.</div>
+        </div>
+
+        <p class="note">
+          Note: Cookie header is intentionally <b>not</b> sent from the browser (fetch won’t allow you to set it manually).
+          If the API requires session cookies, it should be handled via server-side session or same-site cookies.
+          For a demo, this UI just calls the endpoint and shows the response.
+        </p>
+      </div>
+    </section>
+
+    <aside class="card side">
+      <h2>Payload / cURL (copy for Rentgen)</h2>
+      <pre id="curlBox">Loading…</pre>
+      <div class="mini-actions">
+        <button id="btnCopyCurl" type="button">Copy cURL</button>
+        <button id="btnCopyJson" type="button">Copy JSON body</button>
+      </div>
+      <div class="toast" id="toast">Copied.</div>
+    </aside>
+  </div>
+
+  <script>
+    const API_URL = "https://testingmarathon.com/testing/calculate/";
+
+    const elNum1 = document.getElementById("num1");
+    const elNum2 = document.getElementById("num2");
+    const elOp = document.getElementById("operation");
+    const elKey = document.getElementById("apikey");
+
+    const elResult = document.getElementById("resultValue");
+    const elStatus = document.getElementById("statusText");
+
+    const elCurlBox = document.getElementById("curlBox");
+    const elToast = document.getElementById("toast");
+
+    const btnCalc = document.getElementById("btnCalc");
+    const btnReset = document.getElementById("btnReset");
+    const btnCopyCurl = document.getElementById("btnCopyCurl");
+    const btnCopyJson = document.getElementById("btnCopyJson");
+
+    function getBody() {
+      return {
+        num1: Number(elNum1.value),
+        num2: Number(elNum2.value),
+        operation: elOp.value
+      };
+    }
+
+    function buildCurl() {
+      // Cookie header is shown for parity with your original cURL, but browser won't set it.
+      const body = JSON.stringify(getBody());
+      const apikey = (elKey.value || "any-random-string").trim();
+
+      return [
+        "curl -X POST '" + API_URL + "' \\",
+        "  -H 'apikey: " + apikey.replace(/'/g, "'\\''") + "' \\",
+        "  -H 'Content-Type: application/json' \\",
+        "  -H 'Cookie: PHPSESSID=YOUR_SESSION_ID' \\",
+        "  --data '" + body.replace(/'/g, "'\\''") + "'"
+      ].join("\n");
+    }
+
+    function renderCurl() {
+      elCurlBox.textContent = buildCurl();
+    }
+
+    async function calculate() {
+      btnCalc.disabled = true;
+      elStatus.textContent = "Calling API…";
+      elResult.textContent = "—";
+
+      const body = getBody();
+      const apikey = (elKey.value || "any-random-string").trim();
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "apikey": apikey,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(body),
+          // If the API uses cookies on the same domain and sets them properly, this enables sending them.
+          // It won't let you manually set Cookie header though.
+          credentials: "include"
+        });
+
+        const contentType = res.headers.get("content-type") || "";
+        let data;
+
+        if (contentType.includes("application/json")) {
+          data = await res.json();
+        } else {
+          data = await res.text();
+        }
+
+        if (!res.ok) {
+          elStatus.textContent = "HTTP " + res.status + " (see console)";
+          console.error("API error:", res.status, data);
+          return;
+        }
+
+        // Try to display a sensible "result"
+        // If API returns {result: 4} or just 4 or {data:{...}} etc.
+        let shown = data;
+
+        if (data && typeof data === "object") {
+          if ("result" in data) shown = data.result;
+          else if ("value" in data) shown = data.value;
+          else if ("data" in data) shown = data.data;
+          else if ("output" in data) shown = data.output;
+        }
+
+        elResult.textContent = (typeof shown === "string" || typeof shown === "number")
+          ? String(shown)
+          : "OK";
+
+        elStatus.textContent = "Done.";
+        console.log("API response:", data);
+      } catch (err) {
+        elStatus.textContent = "Request failed (see console)";
+        console.error(err);
+      } finally {
+        btnCalc.disabled = false;
+      }
+    }
+
+    function reset() {
+      elNum1.value = 2;
+      elNum2.value = 2;
+      elOp.value = "add";
+      elKey.value = "any-random-string";
+      elResult.textContent = "—";
+      elStatus.textContent = "Ready.";
+      renderCurl();
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        elToast.textContent = "Copied.";
+        elToast.classList.add("show");
+        setTimeout(() => elToast.classList.remove("show"), 900);
+      } catch {
+        // fallback
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        elToast.textContent = "Copied (fallback).";
+        elToast.classList.add("show");
+        setTimeout(() => elToast.classList.remove("show"), 900);
+      }
+    }
+
+    btnCalc.addEventListener("click", calculate);
+    btnReset.addEventListener("click", reset);
+
+    btnCopyCurl.addEventListener("click", () => copyText(buildCurl()));
+    btnCopyJson.addEventListener("click", () => copyText(JSON.stringify(getBody(), null, 2)));
+
+    // Re-render cURL when inputs change
+    [elNum1, elNum2, elOp, elKey].forEach(el => {
+      el.addEventListener("input", renderCurl);
+      el.addEventListener("change", renderCurl);
+    });
+
+    renderCurl();
+  </script>
+</body>
+</html>
