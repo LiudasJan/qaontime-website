@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>String List and Search</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>String List and Search Demo</h1>
+    <div>
+        <input type="text" id="inputString" placeholder="Add a string to the list">
+        <button id="add" onclick="addString()">Add</button>
+    </div>
+    <div>
+        <input type="text" id="searchString" placeholder="Search the list">
+        <button id="search"  onclick="searchList()">Search</button>
+    </div>
+    <div id="listContainer">
+        <h2>List of Strings</h2>
+        <ul id="stringList"></ul>
+    </div>
+    <div id="searchResults">
+        <h2>Search Results</h2>
+        <ul id="resultList"></ul>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
