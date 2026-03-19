@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Classifieds Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="post-ad-form">
+        <h1>Post Your Ad</h1>
+        <input type="text" id="title" placeholder="Title" required>
+        <textarea id="description" placeholder="Description" required></textarea>
+        <input type="text" id="price" placeholder="Price" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="text" id="address" placeholder="Address" required>
+        <input type="file" id="photo" accept="image/*">
+        <button onclick="postAd()">Post Ad</button>
+        <div id="message"></div>
+    </div>
+    
+    <h2>Listed Ads</h2>
+    <div id="adsList"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
