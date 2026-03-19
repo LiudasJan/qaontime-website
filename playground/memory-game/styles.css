@@ -1,0 +1,45 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 10px;
+    max-width: 600px;
+    margin: auto;
+}
+
+.card {
+    background: #eee;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 50px;
+    border: 1px solid #333;
+}
+
+.matched {
+    background: #8f8;
+    cursor: not-allowed;
+}
+
+.hidden {
+    background: #000;
+    cursor: pointer;
+    color: #000;
+}
+#resetGame {
+    margin-top: 20px;
+    font-size: 20px;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+#gameStatus {
+    font-size: 24px;
+    color: green;
+    margin-top: 20px;
+}
