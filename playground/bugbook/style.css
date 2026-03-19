@@ -1,0 +1,29 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: #f0f2f5;
+}
+
+#postCreator textarea {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+#postCreator button {
+    background-color: #4267B2;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+}
+
+#postCreator button:hover {
+    background-color: #365899;
+}
+
+.post {
+    background-color: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+}
