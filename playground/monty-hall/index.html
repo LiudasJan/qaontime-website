@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Monty Hall Simulation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Monty Hall Problem Simulator</h1>
+    <div id="gameArea">
+        <div class="door" id="door1" onclick="chooseDoor(1)">Door 1</div>
+        <div class="door" id="door2" onclick="chooseDoor(2)">Door 2</div>
+        <div class="door" id="door3" onclick="chooseDoor(3)">Door 3</div>
+    </div>
+    <div id="message"></div>
+    <button onclick="startGame()">Restart Game</button>
+    <div id="statistics">
+        <h2>Statistics</h2>
+        <p>Wins: <span id="wins">0</span></p>
+        <p>Losses: <span id="losses">0</span></p>
+        <p>Total Games: <span id="totalGames">0</span></p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
