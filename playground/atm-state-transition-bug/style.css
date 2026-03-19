@@ -1,0 +1,26 @@
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+}
+
+#atm {
+    border: 1px solid #333;
+    padding: 20px;
+    width: 300px;
+    margin: auto;
+}
+
+.screen {
+    border: 2px solid #666;
+    padding: 10px;
+    margin-bottom: 20px;
+    height: 100px;
+    color: #fff;
+    background-color: #000;
+}
+
+input, button {
+    margin-top: 10px;
+}
