@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>QA Interview Framework – QA on time</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="description"
+    content="Standardized QA Engineer interview framework with scoring, practical questions, and evaluation criteria."
+  />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="top-nav">
+    <div class="container nav-inner">
+      <div class="logo">
+        <span class="logo-mark">QA</span>
+        <span class="logo-text">on time</span>
+      </div>
+      <nav class="nav-links" id="navLinks">
+        <a href="/#hero">About</a>
+        <a href="/#focus">What I do</a>
+        <a href="/#rentgen">Rentgen</a>
+        <a href="/#training">Training</a>
+        <a href="/interview-framework.html">Interview</a>
+        <a href="/#contact">Contact</a>
+      </nav>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-inner">
+        <div class="hero-text">
+          <p class="eyebrow">QA on time · Interview framework</p>
+          <h1>Standardized QA interview questions that expose real thinking, not rehearsed theory.</h1>
+          <p class="hero-sub">
+            I got tired of random QA interviews where candidates are judged by gut feeling,
+            irrelevant buzzwords, or whether they can recite definitions from memory.
+          </p>
+          <p class="hero-sub">
+            This framework is built to evaluate how a QA engineer thinks: risk, questioning,
+            API basics, security awareness, and the difference between theatre and actual quality work.
+          </p>
+          <div class="hero-actions">
+            <a href="#framework" class="btn primary">Open framework</a>
+            <a href="https://qaontime.com" class="btn outline">Back to QA on time</a>
+          </div>
+          <div class="hero-meta">
+            <span>10 mandatory topics</span>
+            <span>100-point scoring</span>
+            <span>Practical QA thinking</span>
+          </div>
+        </div>
+
+        <aside class="hero-side">
+          <div class="pill">
+            No guessing. No vibes. Just structured evaluation.
+          </div>
+          <ul class="checklist">
+            <li>Built for real QA interviews, not HR theatre.</li>
+            <li>Focuses on critical thinking, risk and practical understanding.</li>
+            <li>Useful for junior, mid and senior screening with discussion.</li>
+          </ul>
+          <p class="small-note">
+            If a candidate sounds good only in theory, this framework usually exposes it fast.
+          </p>
+        </aside>
+      </div>
+    </section>
+
+    <section id="framework" class="section">
+      <div class="container">
+        <h2>QA Engineer – Standardized Interview Framework</h2>
+        <p class="section-sub">
+          Total score: 100. Use this as a structured guide, not as a substitute for thinking.
+          Additional role-specific questions are welcome, but these are the core ones.
+        </p>
+
+        <div class="grid-3">
+          <div class="card">
+            <h3>Scoring</h3>
+            <p><strong>Total score:</strong> 100 (🦄 Unicorn)</p>
+            <ul>
+              <li>70–100: Strong hire</li>
+              <li>50–69: Borderline (requires discussion)</li>
+              <li>&lt; 50: No hire</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>What this framework checks</h3>
+            <ul>
+              <li>QA mindset vs pure defect hunting</li>
+              <li>Critical thinking and assumptions</li>
+              <li>Test design fundamentals</li>
+              <li>API and security basics</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>Recommendation</h3>
+            <ul>
+              <li>Print it before the interview</li>
+              <li>Take notes next to each answer</li>
+              <li>Use follow-up questions</li>
+              <li>Do not reward confidence without substance</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-alt">
+      <div class="container">
+        <h2>Interview questions</h2>
+        <p class="section-sub">
+          Each question is scored out of 10. The goal is not to hear a textbook answer,
+          but to understand how the person thinks and what they actually notice.
+        </p>
+
+        <div class="grid-3">
+          <div class="card">
+            <h3>1. Difference Between QA and Testing (0–10)</h3>
+            <p><strong>Question:</strong> What is the difference between Quality Assurance (QA) and Testing?</p>
+            <p><strong>Expected answer:</strong> Testing focuses on finding defects and identifying when the system does not work or may fail. QA focuses on prevention – activities that reduce the likelihood of defects appearing in the product.</p>
+            <p><strong>Follow-up:</strong> Ask for examples of QA activities.</p>
+            <ul>
+              <li>0–3: Confuses QA with testing</li>
+              <li>4–7: Correct theory, limited practical examples</li>
+              <li>8–10: Clear preventive QA mindset with real examples</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>2. Observational Thinking / Critical Thinking (0–10)</h3>
+            <p><strong>Question:</strong> Show the candidate the<a href="/assets/car.png"> car image </a> and ask: Which car is applying the brakes?</p>
+            <ul>
+              <li>Answers “Car #2” → 0 points</li>
+              <li>Says it could be any of them or none of them → 10 points</li>
+              <li>Starts asking clarifying questions → 6 points</li>
+              <li>Notices extra details and asks clarifying questions → 8 points</li>
+            </ul>
+            <p><strong>Goal:</strong> Evaluate assumptions, questioning skills and critical thinking.</p>
+          </div>
+
+          <div class="card">
+            <h3>3. White-box vs Black-box Testing (0–10)</h3>
+            <p><strong>Question:</strong> Explain White-box and Black-box testing techniques.</p>
+            <p><strong>Basic explanation:</strong> White-box means knowing how the code is implemented and executed. Black-box means testing inputs and outputs without relying on internal implementation.</p>
+            <p><strong>Advanced answer:</strong> White-box testing matters because incorrect logic may still produce a correct-looking output. Example: 2+2 and 2×2 both return 4, but only one is correct in context.</p>
+          </div>
+
+          <div class="card">
+            <h3>4. Test Design Techniques (0–10)</h3>
+            <p><strong>Question:</strong> What test design techniques do you know?</p>
+            <ul>
+              <li>Equivalence Partitioning → 3 points</li>
+              <li>Boundary Value Analysis → 3 points</li>
+              <li>Decision Tables → 2 points</li>
+              <li>State Transition Testing → 2 points</li>
+              <li>Exploratory Testing only → partial score</li>
+              <li>Mentioning test levels/types only → 0 points</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>5. Test Automation – Good Candidates (0–10)</h3>
+            <p><strong>Question:</strong> What makes a test a good candidate for automation?</p>
+            <ul>
+              <li>“Everything should be automated” → –5 points</li>
+              <li>Regression only → 1 point</li>
+              <li>Repetitive tests executed frequently</li>
+              <li>Bugs worth protecting from regression</li>
+              <li>Critical business functionality</li>
+              <li>Complex or time-consuming flows</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>6. Tight Deadlines & Reduced Testing Scope (0–10)</h3>
+            <p><strong>Scenario:</strong> A new project has very tight deadlines, and the team wants to skip detailed testing. How would you handle it?</p>
+            <ul>
+              <li>“I would test only critical functionality” → 0 points</li>
+              <li>Mentions communication → 2–8 points</li>
+              <li>Clearly explains scope, risks, what will not be tested, and shares this with the team → 10 points</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>7. REST API Testing Knowledge (0–10)</h3>
+            <p><strong>Question:</strong> Do you have experience with REST API testing?</p>
+            <p><strong>Follow-up questions:</strong></p>
+            <ul>
+              <li>401 means Unauthorized</li>
+              <li>POST creates a new entity/resource</li>
+              <li>PUT updates the whole object</li>
+              <li>PATCH updates part of the object</li>
+              <li>No paging or limits in GET list endpoint is a problem</li>
+              <li>500 on invalid email input is not OK</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>8. Session Security & Cookies (0–10)</h3>
+            <p><strong>Task:</strong> Use the web app and provided credentials. Ask the candidate to inspect the session behavior.</p>
+            <ul>
+              <li>Asks to open DevTools and find cookies → 3 points</li>
+              <li>Explains why integer session cookie is weak → 3 points</li>
+              <li>Tries modifying cookie to impersonate another user → 2 points</li>
+              <li>Explains HttpOnly correctly → 2 points</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>9. High-Level Test Plan (0–10)</h3>
+            <p><strong>Task:</strong> Show the <a href="https://qaontime.com/playground/api-calculator/">Calculator app </a> with frontend and backend. Ask for a high-level test plan.</p>
+            <ul>
+              <li>Main functionality with different numbers and operations → 2 points</li>
+              <li>Negative scenarios and validation → 2 points</li>
+              <li>FE–BE communication and error handling → 2 points</li>
+              <li>Performance and/or security → 2 points</li>
+              <li>Opens DevTools and suggests API testing → 2 points</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>10. Security Bug Analysis (0–10)</h3>
+            <p><strong>Scenario:</strong> Changing Facebook’s <code>c_user</code> cookie to <code>-1</code> returns 500, while other values return 400.</p>
+            <ul>
+              <li>Why does it crash on -1? → likely unhandled server error / DB edge case</li>
+              <li>Why might it stay unfixed? → legacy, low priority, risky change, other protections</li>
+              <li>Why are different error codes bad? → user enumeration and DB size inference</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container two-col">
+        <div>
+          <h2>How to use this in real interviews</h2>
+          <p class="section-sub">
+            This is not about being robotic. It is about avoiding random hiring decisions.
+            Good candidates often show their value in how they ask questions, challenge assumptions,
+            and explain risk — not in how confidently they recite terminology.
+          </p>
+          <ul class="bullet-list">
+            <li>Use follow-up questions when answers sound memorized</li>
+            <li>Reward practical examples, not polished buzzwords</li>
+            <li>Look for preventive thinking, not just bug hunting</li>
+            <li>Pay attention to how the person handles uncertainty</li>
+          </ul>
+        </div>
+
+        <aside class="side-box">
+          <h3>Final notes</h3>
+          <p class="small">
+            These are mandatory questions. Additional role-specific questions are welcome.
+          </p>
+          <p class="small">
+            Best use: print this document before the interview and write notes directly next to each topic.
+          </p>
+          <a href="https://qaontime.com" class="text-link">
+            Back to QA on time →
+          </a>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section section-alt">
+      <div class="container contact-inner">
+        <div>
+          <h2>Need help setting up a better QA interview process?</h2>
+          <p class="section-sub">
+            If your hiring still depends on random questions, gut feeling, or whatever the loudest person in the room thinks,
+            that can be fixed.
+          </p>
+        </div>
+
+        <div class="contact-actions">
+          <div class="contact-card">
+            <h3>WhatsApp</h3>
+            <p class="small">Quick discussion about your hiring process or interview setup.</p>
+            <a href="https://wa.me/37064034810" class="btn primary full-width" target="_blank" rel="noopener">
+              Open WhatsApp
+            </a>
+          </div>
+
+          <div class="contact-card">
+            <h3>LinkedIn</h3>
+            <p class="small">See what I write before deciding whether you want my help.</p>
+            <a href="https://www.linkedin.com/in/liudas-jankauskas/" class="btn outline full-width" target="_blank" rel="noopener">
+              View LinkedIn profile
+            </a>
+          </div>
+
+          <div class="contact-card">
+            <h3>Email</h3>
+            <p class="small">For longer context, internal frameworks, or interview process review.</p>
+            <a href="mailto:LiudasJan@gmail.com" class="btn ghost full-width">
+              Email Me
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>© <span id="year"></span> QA on time – Liudas Jankauskas.</span>
+      <span>Software quality without theatre.</span>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
