@@ -8,7 +8,7 @@
     name="description"
     content="Standardized QA Engineer interview framework with scoring, practical questions, and evaluation criteria."
   />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="../style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -21,12 +21,12 @@
         <span class="logo-text">on time</span>
       </div>
       <nav class="nav-links" id="navLinks">
-        <a href="/#hero">About</a>
-        <a href="/#focus">What I do</a>
-        <a href="/#rentgen">Rentgen</a>
-        <a href="/#training">Training</a>
-        <a href="/interview-framework.html">Interview</a>
-        <a href="/#contact">Contact</a>
+        <a href="../#hero">About</a>
+        <a href="../#focus">What I do</a>
+        <a href="../#rentgen">Rentgen</a>
+        <a href="../#training">Training</a>
+        <a href="/interview">Interview</a>
+        <a href="../#contact">Contact</a>
       </nav>
       <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
     </div>
@@ -138,7 +138,7 @@
 
           <div class="card">
             <h3>2. Observational Thinking / Critical Thinking (0–10)</h3>
-            <p><strong>Question:</strong> Show the candidate the<a href="/assets/car.png"> car image </a> and ask: Which car is applying the brakes?</p>
+            <p><strong>Question:</strong> Show the candidate the<a href="../assets/car.png"> car image</a> and ask: Which car is applying the brakes?</p>
             <ul>
               <li>Answers “Car #2” → 0 points</li>
               <li>Says it could be any of them or none of them → 10 points</li>
@@ -173,11 +173,11 @@
             <p><strong>Question:</strong> What makes a test a good candidate for automation?</p>
             <ul>
               <li>“Everything should be automated” → –5 points</li>
-              <li>Regression only → 1 point</li>
-              <li>Repetitive tests executed frequently</li>
-              <li>Bugs worth protecting from regression</li>
-              <li>Critical business functionality</li>
-              <li>Complex or time-consuming flows</li>
+              <li>Regression only → 2 point</li>
+              <li>Repetitive tests executed frequently → 2</li>
+              <li>Bugs worth protecting from regression → 2</li>
+              <li>Critical business functionality → 2</li>
+              <li>Complex or time-consuming flows → 2</li>
             </ul>
           </div>
 
@@ -187,7 +187,7 @@
             <ul>
               <li>“I would test only critical functionality” → 0 points</li>
               <li>Mentions communication → 2–8 points</li>
-              <li>Clearly explains scope, risks, what will not be tested, and shares this with the team → 10 points</li>
+              <li>Clearly explains scope, risks, what will <b>not be tested</b>, and shares this with the team → 10 points</li>
             </ul>
           </div>
 
@@ -196,32 +196,31 @@
             <p><strong>Question:</strong> Do you have experience with REST API testing?</p>
             <p><strong>Follow-up questions:</strong></p>
             <ul>
-              <li>401 means Unauthorized</li>
-              <li>POST creates a new entity/resource</li>
-              <li>PUT updates the whole object</li>
-              <li>PATCH updates part of the object</li>
-              <li>No paging or limits in GET list endpoint is a problem</li>
-              <li>500 on invalid email input is not OK</li>
+              <li>You send a request and receive a 401 response. What does it mean? → 2</li>
+              <li>What does the POST method do? → 2</li>
+              <li>What is the difference between PUT and PATCH? → 2</li>
+              <li>A GET endpoint returns a list of objects without paging or limits. Is this a problem, and why? → 2</li>
+              <li>A POST endpoint accepts only a valid email. You send an invalid string and receive a 500 error. Is this OK? → 2</li>
             </ul>
           </div>
 
           <div class="card">
             <h3>8. Session Security & Cookies (0–10)</h3>
-            <p><strong>Task:</strong> Use the web app and provided credentials. Ask the candidate to inspect the session behavior.</p>
+            <p><strong>Task:</strong> This is <a href="https://www.testingmarathon.com/testing/unsecured_session ">unsecured session app.</a> Credentials (case sensitive): Jon / password</p>
             <ul>
               <li>Asks to open DevTools and find cookies → 3 points</li>
-              <li>Explains why integer session cookie is weak → 3 points</li>
-              <li>Tries modifying cookie to impersonate another user → 2 points</li>
-              <li>Explains HttpOnly correctly → 2 points</li>
+              <li>Aks explains why the session cookie (integer value) is weak → 3 points</li>
+              <li>Aks to modifies cookie to impersonate another user → 2 points</li>
+              <li>Aks to explain what HttpOnly means → 2 points (Cookie cannot be accessed via client-side JavaScript)</li>
             </ul>
           </div>
 
           <div class="card">
             <h3>9. High-Level Test Plan (0–10)</h3>
-            <p><strong>Task:</strong> Show the <a href="https://qaontime.com/playground/api-calculator/">Calculator app </a> with frontend and backend. Ask for a high-level test plan.</p>
+            <p><strong>Task:</strong> Show the <a href="https://qaontime.com/playground/api-calculator/">Calculator app</a>  Explain that the calculator has both a frontend and a backend. Ask to prepare a high-level test plan. How to test this?</p>
             <ul>
               <li>Main functionality with different numbers and operations → 2 points</li>
-              <li>Negative scenarios and validation → 2 points</li>
+              <li>Mentions negative scenarios and validation → 2 points</li>
               <li>FE–BE communication and error handling → 2 points</li>
               <li>Performance and/or security → 2 points</li>
               <li>Opens DevTools and suggests API testing → 2 points</li>
@@ -230,11 +229,11 @@
 
           <div class="card">
             <h3>10. Security Bug Analysis (0–10)</h3>
-            <p><strong>Scenario:</strong> Changing Facebook’s <code>c_user</code> cookie to <code>-1</code> returns 500, while other values return 400.</p>
+            <p>Show facebook bug: <a href="../assets/facebook-500.gif">500 System Error</a><strong>Scenario:</strong> Changing Facebook’s <code>c_user</code> cookie to <code>-1</code> returns 500, while other values return 400.</p>
             <ul>
-              <li>Why does it crash on -1? → likely unhandled server error / DB edge case</li>
-              <li>Why might it stay unfixed? → legacy, low priority, risky change, other protections</li>
-              <li>Why are different error codes bad? → user enumeration and DB size inference</li>
+              <li>Why does Facebook crash only when c_user = -1? → 3 points, Likely -1 does not exist in the DB and causes an unhandled server error</li>
+              <li>Why might Facebook not fix this bug? → 2 points, if mentioned at least one: Legacy system, low priority, risky change, protected by other security layers</li>
+              <li>Why is it a problem to return different error codes for existing vs non-existing users? → 5 points</li>
             </ul>
           </div>
         </div>
@@ -319,6 +318,6 @@
     </div>
   </footer>
 
-  <script src="script.js"></script>
+  <script src="../script.js"></script>
 </body>
 </html>
