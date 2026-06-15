@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Context Trap · Interview Lab</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    
+<div class="topbar">
+  <a class="brand" href="index.html">
+    <h1>Interview Lab</h1>
+    <span>For a cook</span>
+  </a>
+  <nav class="nav">
+    <a href="index.html">ONE</a>
+    <a href="02-scrambled-text.html">TWO</a>
+    <a href="03-sequence.html">THREE</a>
+    <a href="04-boundary-lab.html">FOUR</a>
+    <a href="05-api-semantics.html">FIVE</a>
+    <a href="06-context-trap.html" class="active">SIX</a>
+  </nav>
+</div>
+
+    
+<section class="page-stage">
+  <div class="noise-layer"></div>
+  <div class="floating-panel card">
+    <h2>QA inžinierius nespėjo visko ištestuoti tai ką buvo suplanavęs, kaip jis tūrėtų elgtis?</h2>
+    <p><strong>Requirement:</strong> failed validation must return 400 with a JSON error body. Authentication failures must return 401. Missing permission must return 403.</p>
+    <p><strong>Observed:</strong> invalid email returns 200 with <code>{"success": false}</code>. Missing token returns 403. User without permission returns 403.</p>
+    <p><strong>Question:</strong> What are the two most important bugs here?</p>
+  </div>
+</section>
+
+  </main>
+  <script src="assets/app.js"></script>
+</body>
+</html>

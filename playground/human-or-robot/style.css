@@ -1,0 +1,45 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #f4f4f4;
+    font-family: 'Arial', sans-serif;
+}
+
+#typingInput {
+    padding: 10px;
+    font-size: 1.2em;
+    border: 2px solid #009688;
+    border-radius: 5px;
+    outline: none;
+    margin-bottom: 20px;
+    transition: border-color 0.3s;
+}
+
+#typingInput:focus {
+    border-color: #21aba5;
+}
+
+#detectionResult {
+    font-size: 1.5em;
+    color: #009688;
+    border: 1px solid #009688;
+    border-radius: 5px;
+    padding: 10px;
+    text-align: center;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Responsive typography */
+@media (max-width: 768px) {
+    #typingInput,
+    #detectionResult {
+        font-size: 1em;
+    }
+}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BugBook</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <button id="refreshState" style="display:none">Refresh State</button>
+    </br>
+        <h1>BugBook</h1>
+    </br>
+
+        <div id="changeUserName">
+            <input type="text" id="userNameInput" placeholder="Enter your name">
+            <button onclick="changeUserName()">Change User Name</button>
+        </div>
+    </br>
+        <div id="postCreator">
+            <textarea id="newPostContent" placeholder="What's on your mind, Fogell McLovin?"></textarea>
+            <input type="file" id="imageUpload" accept="image/*">
+            <button onclick="createPost()">Post</button>
+        </div>
+        <div id="postsContainer">
+            <!-- Predefined posts -->
+            <div class="post" id="post_134288543666">
+                <h4>John Doe</h4>
+                <p>This is a test post from another user.</p>
+                <button id="demo1" onclick="toggleLike(this, 'post_134288543666')">Like</button>
+                <span class="likesCount">0</span> Likes
+            </div>
+            <div class="post" id="post_134288543777">
+                <h4>Jane Smith</h4>
+                <p>My new ❤️ sorry Jane.</p>
+                <img src="img/my-new.jpg" alt="Example" style="width: 300; margin-top: 10px;">
+                <button id="demo2" onclick="toggleLike(this, 'post_134288543777')">Like</button>
+                <span class="likesCount">0</span> Likes
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

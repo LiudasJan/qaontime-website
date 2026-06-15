@@ -1,0 +1,73 @@
+body,
+html {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: #e0f7fa;
+}
+
+.container {
+	display: grid;
+	grid-template-areas:
+		"controls"
+		"pipes"
+		"indicators";
+	gap: 15px;
+	justify-items: center;
+	text-align: center;
+	vertical-align: middle;
+}
+
+.controls {
+	grid-area: controls;
+	display: flex;
+	gap: 10px;
+}
+
+.valve {
+	padding: 10px;
+	background-color: #4caf50;
+	color: white;
+	cursor: pointer;
+	border-radius: 5px;
+	user-select: none;
+}
+
+.pipes {
+	grid-area: pipes;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+    color: white;
+}
+
+.pipe {
+	width: 100px;
+	height: 20px;
+	background-color: grey;
+	border-radius: 5px;
+}
+
+.indicators {
+	grid-area: indicators;
+	display: flex;
+	gap: 15px;
+}
+
+.indicator {
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background-color: red;
+}
+
+.active {
+	background-color: #2196f3;
+}
+
+.indicator.active {
+	background-color: #4caf50;
+}

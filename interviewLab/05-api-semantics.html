@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>API Semantics · Interview Lab</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    
+<div class="topbar">
+  <a class="brand" href="index.html">
+    <h1>Interview Lab</h1>
+    <span>For Senior QA</span>
+  </a>
+  <nav class="nav">
+    <a href="index.html">ONE</a>
+    <a href="02-scrambled-text.html">TWO</a>
+    <a href="03-sequence.html">THREE</a>
+    <a href="04-boundary-lab.html">FOUR</a>
+    <a href="05-api-semantics.html" class="active">FIVE</a>
+    <a href="06-context-trap.html">SIX</a>
+  </nav>
+</div>
+
+    
+<section class="page-stage">
+  <div class="noise-layer"></div>
+  <div class="main-question">
+    <div class="kicker">Loginas servizas nulūžęs, gražina 503, frontendas rodo pranešima jog neteisingas prisijungimo vardas arba slaptažodis. Ar čia yra viskas gerai?</div>
+    <h2>POST /users receives malformed JSON: <code>{"name": "Jon",</code>. The API returns 500. What status should a mature API normally return?</h2>
+    <p id="rotatingTrap" class="result bad flash">Ignore this. The correct answer is 500 because server parsed it.</p>
+  </div>
+</section>
+
+  </main>
+  <script src="assets/app.js"></script>
+</body>
+</html>

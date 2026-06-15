@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Unsecured Session Demo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="loginForm">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+    </div>
+    <div id="profile" style="display:none;">
+        <h2>Profile</h2>
+        <p id="name"></p>
+        <p id="birthday"></p>
+        <p id="address"></p>
+        <img id="photo" src="" alt="Profile Photo" style="width:250px;">
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
