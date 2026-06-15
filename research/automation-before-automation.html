@@ -1,0 +1,431 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>AUTOMATION BEFORE AUTOMATION (ABA): An Intermediate Phase in Modern Software Testing</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="The original paper that introduced the ABA - AUTOMATION BEFORE AUTOMATION">
+    <style>
+    body {
+        margin: 0;
+        padding: 2rem;
+    }
+
+    #wrapper {
+        max-width: 60rem;
+        margin: 0 auto;
+    }
+
+    h1, h2, h3 {
+        text-align: center;
+        text-transform: uppercase;
+        margin-top: 2rem;
+    }
+
+    h1 {
+        font-size: 28px;
+    }
+
+    h2 {
+        font-size: 16px;
+    }
+
+    h3 {
+        font-size: 16px;
+    }
+
+    h1 + h2 {
+        margin-top: 1rem;
+    }
+
+    .meta {
+        text-align: center;
+        font-size: 14px;
+        margin: 1rem 0 2rem 0;
+    }
+
+    p {
+        margin: 0;
+        text-align: justify;
+    }
+
+    p + p {
+        text-indent: 1.5rem;
+    }
+
+    p.spaced {
+        margin: 1rem 0;
+    }
+
+    .footnote {
+        font-size: 13px;
+        vertical-align: super;
+    }
+
+    .lefteq mjx-container {
+        float: left;
+    }
+
+    .lefteq mjx-container mjx-mtable {
+        min-width: 0 !important;
+    }
+
+    .lefteq mjx-container mjx-table {
+        min-width: 0 !important;
+        margin: 0 !important;
+    }
+
+    .lefteq + p {
+        clear: both;
+        padding-top: 1rem;
+    }
+
+    .meta-bottom {
+        text-align: right;
+        margin-top: 1rem;
+    }
+
+    .footnotes {
+        margin-top: 2rem;
+    }
+
+    .footnotes hr {
+        border: 0;
+        height: 1px;
+        max-width: 30rem;
+        background-color: black;
+        margin: 1rem 0;
+    }
+
+    .footnotes ol {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .footnotes li {
+        margin: 1rem 0 0 0;
+    }
+    </style>
+    <link rel="canonical" href="https://qaontime.com/research/automation-before-automation.html">
+</head>
+
+<body>
+    <div id="wrapper">
+
+        <h1>AUTOMATION BEFORE AUTOMATION (ABA): An Intermediate Phase in Modern Software Testing</h1>
+
+        <h2>by Liudas Jankauskas</h2>
+
+        <p class="meta">
+            [First version: June 2026]<br>
+            [<a href="/">qaontime.com</a>]<br>
+            pdf-version: [<a href="automation-before-automation-white-paper.pdf">PDF</a>]
+        </p>
+
+        <h3>Abstract</h3>
+        <p class="abstract">Modern software teams routinely perform rapid testing of newly implemented functionality before investing in traditional automated test suites. This phase commonly blends manual exploration with automated techniques such as fuzzers, mutation tools, schema-driven generators, and AI-assisted test generation to uncover defects, robustness issues, and unexpected behavior.</p>
+        <p>Despite its prevalence, this activity is frequently misclassified as either exploratory testing 
+            <a class="footnote" href="#_ftn1" id="_ftnref1">[1]</a>
+            <a class="footnote" href="#_ftn2" id="_ftnref2">[2]</a>
+            <a class="footnote" href="#_ftn3" id="_ftnref3">[3]</a>
+            <a class="footnote" href="#_ftn4" id="_ftnref4">[4]</a>
+            <a class="footnote" href="#_ftn5" id="_ftnref5">[5]</a>   or conventional test automation, even though it aligns only partially with either category. This paper introduces Automation Before Automation (ABA) as a distinct intermediate testing phase.</p>
+        <p>Automation Before Automation (ABA) is defined as the practice of automatically generating and executing exploratory, validation, robustness, and protocol-level tests before creating and maintaining traditional automated test suites — in short, automated exploration before automated verification.</p>
+        <p>The paper provides a conceptual framework and shared vocabulary for this increasingly important activity, describing its characteristics, relationship to traditional automation, associated tooling categories, limitations, and practical application through a real-world case study.</p>
+
+        <h3>INTRODUCTION</h3>
+        <p>Modern software testing <a class="footnote" href="#_ftn8" id="_ftnref8">[8]</a> discussions often distinguish between exploratory testing and automated regression testing. Exploratory testing focuses on discovering unknown problems through investigation, experimentation, and learning. Automated regression testing focuses on repeatedly verifying known behavior and preventing previously solved problems from reappearing. Both activities are widely studied, well understood, and supported by extensive literature, methodologies, and tooling.</p>
+        <p>In practice, however, software teams routinely perform an additional activity that exists between these two phases. After new functionality is implemented, developers and testers rarely begin by creating large maintainable automated test suites. Instead, they first attempt to understand how the system behaves. They modify inputs, explore boundary conditions, generate invalid data, vary protocols, examine error handling, and intentionally attempt to trigger unexpected behavior. Increasingly, these activities are assisted by tools capable of automatically generating and executing hundreds or thousands of test variations within minutes.</p>
+        <p>The purpose of these activities is not long-term regression protection. The generated tests are often temporary, disposable, and exploratory in nature. Their primary goal is rapid defect discovery and improved understanding of the system under test.</p>
+        <p>Despite becoming increasingly common, particularly with the growth of AI-assisted testing, fuzzing 
+            <a class="footnote" href="#_ftn9" id="_ftnref9">[9]</a>
+            <a class="footnote" href="#_ftn10" id="_ftnref10">[10]</a> tools, property-based testing 
+            <a class="footnote" href="#_ftn12" id="_ftnref12">[12]</a>,  automated test generators, and protocol analysis tools, this activity has no widely accepted name or formal definition. As a result, it is frequently grouped under either exploratory testing or test automation, even though its objectives, lifecycle, and outcomes differ significantly from both.</p>
+        <p>This paper introduces the term Automation Before Automation (ABA) and proposes the following definition: Automation Before Automation (ABA) is the practice of automatically generating and executing exploratory, validation, robustness, and protocol-level tests before creating and maintaining traditional automated test suites. ABA can be summarized as automated exploration before automated verification.</p>
+        <p>The objective of this paper is not to introduce a new testing technique. Rather, it seeks to formally define, characterize, and provide a conceptual framework for a testing activity that is already widely practiced but remains largely unnamed within contemporary software testing literature.</p>
+
+
+        <h3>1. THE MISSING LAYER IN MODERN TESTING</h3>
+        <p>Software testing literature typically describes a progression from development to automated testing and continuous integration 
+            <a class="footnote" href="#_ftn6" id="_ftnref6">[6]</a>. In practice, however, the actual workflow followed by most teams contains an additional intermediate stage.</p>
+        <p>A simplified representation of the commonly assumed process is shown below:</p>
+        <br>
+        <table style="width:100%; border:1px solid #000; border-collapse:collapse;">
+        <tr>
+            <td style="padding:25px; text-align:center; ">
+            Development → Exploration → Test Automation → CI/CD → Release
+            </td>
+        </tr>
+        </table><br>
+        <p>This model correctly recognizes the existence of exploratory activities before formal test automation begins. However, the exploration phase is often treated as a single activity. In practice, modern software teams frequently combine manual exploration with automated exploration techniques. Developers and testers not only execute requests manually, but also use tools capable of automatically generating and executing large numbers of test variations, boundary conditions, mutations, protocol checks, robustness scenarios, and AI-generated test cases.</p>
+        <p>These activities are exploratory in purpose but automated in execution. Despite becoming increasingly common, they are typically grouped under either exploratory testing or test automation, even though they do not fully fit either category.</p>
+        <p>As a result, the actual workflow more closely resembles the following:</p>
+        <br>
+        <table style="width:100%; border:1px solid #000; border-collapse:collapse;">
+        <tr>
+            <td style="padding:25px; text-align:center; ">
+            Development → Manual Exploration → ABA → Test Automation → CI/CD → Release
+            </td>
+        </tr>
+        </table><br>
+        <p>The ABA phase serves a fundamentally different purpose from traditional automated testing. Traditional automated testing focuses on long-term regression prevention. Tests are intentionally designed, maintained, version-controlled, and repeatedly executed throughout the software lifecycle.</p>
+        <p>ABA focuses on rapid exploration and defect discovery. The generated tests are often temporary and disposable. Their value lies not in long-term maintenance, but in quickly revealing unknown problems, validation weaknesses, robustness issues, and unexpected system behavior before formal automation efforts begin.</p>
+        <p>Without recognizing ABA as a distinct activity, discussions about testing often incorrectly classify these practices as either exploratory testing or test automation. This obscures important differences in objectives, cost, maintenance requirements, and expected outcomes.</p>
+        <p>The existence of this intermediate layer becomes increasingly visible as AI-assisted test generation, fuzzing technologies, protocol analyzers, and automated exploration tools become more common throughout the software industry.</p>
+
+        <h3>2. DEFINING (ABA) AUTOMATION BEFORE AUTOMATION</h3>
+        <p>This paper proposes the following definition: <b>Automation Before Automation (ABA)</b> is the practice of automatically generating and executing exploratory, validation, robustness, and protocol-level tests before creating and maintaining traditional automated test suites. ABA can be summarized as: Automated exploration before automated verification.</p>
+        <p>The defining objective of ABA is not regression prevention. Instead, ABA aims to rapidly discover unknown defects, validation weaknesses, unexpected system behavior, and implementation risks immediately after functionality is implemented or modified.</p>
+        <p>ABA occupies a distinct position between manual exploration and traditional test automation. It is performed before long-term automated test suites are designed, implemented, maintained, and integrated into continuous delivery 
+            <a class="footnote" href="#_ftn7" id="_ftnref7">[7]</a> pipelines.</p>
+        <p>For the purposes of this paper, an activity belongs to ABA if its primary purpose is exploratory discovery through automatically generated or automatically executed testing intended to improve understanding of the system under test before formal automation efforts begin.</p>
+        <br>
+        <p>ABA may include activities such as:</p>
+        <ul>
+            <li>Automated exploratory testing</li>
+            <li>Automated robustness testing</li>
+            <li>Automated validation testing</li>
+            <li>Automated protocol-level testing</li>
+            <li>Automated mutation-based testing</li>
+            <li>Automated fuzzing and input variation</li>
+            <li>AI-assisted exploratory test generation</li>
+        </ul>
+        <p>ABA does not include:</p>
+        <ul>
+            <li>Manual exploratory testing without automated test generation or execution</li>
+            <li>Traditional regression automation</li>
+            <li>Long-term maintainable automated test suites</li>
+            <li>Continuous integration test execution</li>
+            <li>Acceptance test automation</li>
+            <li>Automated verification of previously defined requirements</li>
+            <li>SAST (Static Application Security Testing)</li>
+        </ul>
+        <p>The distinction is important because the primary goal of ABA is discovery, while the primary goal of traditional automation is verification.</p>
+
+
+        <h3>3. CHARACTERISTICS OF ABA</h3>
+        <p>Although ABA may be implemented using different techniques and tools, several common characteristics frequently distinguish it from traditional automated testing.</p>
+        <br>
+        <p><b>Generated Rather Than Manually Authored</b></p>
+        <p>ABA commonly relies on automated generation of test cases rather than manually designed test suites. Test variations may be derived from schemas, mutations, heuristics, protocol rules, fuzzing strategies, AI-generated scenarios, or other automated mechanisms.</p>
+        <br>
+        <p><b>Exploratory by Nature</b></p>
+        <p>The primary purpose of ABA is exploration and discovery. Rather than confirming known behavior, ABA seeks to reveal previously unknown defects, unexpected system responses, validation weaknesses, and robustness issues.</p>
+        <br>
+        <p><b>High-Volume Execution</b></p>
+        <p>ABA often executes large numbers of test variations in a short period of time. Hundreds or thousands of inputs may be evaluated before a single maintainable regression test is written.</p>
+        <br>
+        <p><b>Low Maintenance Cost</b></p>
+        <p>Unlike traditional automated test suites, ABA activities typically require little or no long-term maintenance. Their value is concentrated in the information they produce rather than in their continued execution over time.</p>
+        <br>
+        <p><b>Frequently Disposable</b></p>
+        <p>Many ABA-generated tests are temporary artifacts. Once findings have been analyzed and valuable scenarios identified, the generated tests are often discarded rather than maintained throughout the software lifecycle.</p>
+        <br>
+        <p><b>Discovery-Oriented Rather Than Verification-Oriented</b></p>
+        <p>Traditional automation primarily verifies known expectations. ABA primarily seeks to discover unknown information about the behavior of the system under test.</p>
+        <br>
+        <p><b>Fast Feedback</b></p>
+        <p>ABA is designed to provide rapid feedback immediately after implementation or modification of functionality, allowing teams to identify issues before investing in long-term automation efforts.</p>
+        <br>
+        <p>These characteristics distinguish ABA from traditional automated testing, which typically emphasizes manually designed, maintainable, regression-focused test suites intended for repeated execution throughout the software lifecycle.</p>
+
+
+        <h3>4. ABA vs TRADITIONAL TEST AUTOMATION</h3>
+        <p>Automation Before Automation (ABA) and traditional test automation both rely on automated execution. However, their objectives, lifecycle, economics, and expected outcomes differ significantly.</p>
+        <p>Traditional automation is primarily concerned with regression prevention. Tests are intentionally designed, maintained over time, integrated into delivery pipelines, and repeatedly executed to ensure previously verified functionality continues to operate correctly.</p>
+        <p>ABA serves a different purpose. Its objective is rapid exploration and defect discovery immediately after functionality is implemented or modified. Rather than protecting against known failures, ABA attempts to expose unknown failures before formal automation efforts begin.</p>
+        <p>The distinction can be summarized as follows:</p>
+        <br>
+        <table style="width:100%; border-collapse:collapse; ">
+            <thead>
+                <tr style="background:#d9d9d9;">
+                <th style="border:1px solid #000; padding:12px; text-align:center;">
+                    Automation Before Automation (ABA)
+                </th>
+                <th style="border:1px solid #000; padding:12px; text-align:center;">
+                    Traditional Test Automation
+                </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                <td style="border:1px solid #000; padding:12px;">Discovers unknown issues</td>
+                <td style="border:1px solid #000; padding:12px;">Prevents known regressions</td>
+                </tr>
+                <tr>
+                <td style="border:1px solid #000; padding:12px;">Exploration-oriented</td>
+                <td style="border:1px solid #000; padding:12px;">Verification-oriented</td>
+                </tr>
+                <tr>
+                <td style="border:1px solid #000; padding:12px;">Generated automatically</td>
+                <td style="border:1px solid #000; padding:12px;">Usually designed manually</td>
+                </tr>
+                <tr>
+                <td style="border:1px solid #000; padding:12px;">Often disposable</td>
+                <td style="border:1px solid #000; padding:12px;">Long-term maintained</td>
+                </tr>
+                <tr>
+                <td style="border:1px solid #000; padding:12px;">High-volume execution</td>
+                <td style="border:1px solid #000; padding:12px;">Targeted execution</td>
+                </tr>
+                <tr>
+                <td style="border:1px solid #000; padding:12px;">Rapid feedback</td>
+                <td style="border:1px solid #000; padding:12px;">Long-term confidence</td>
+                </tr>
+                <tr>
+                <td style="border:1px solid #000; padding:12px;">Low maintenance cost</td>
+                <td style="border:1px solid #000; padding:12px;">Continuous maintenance cost</td>
+                </tr>
+                <tr>
+                <td style="border:1px solid #000; padding:12px;">Identifies automation candidates</td>
+                <td style="border:1px solid #000; padding:12px;">Implements automation candidates</td>
+                </tr>
+                <tr>
+                <td style="border:1px solid #000; padding:12px;">Executed before formal automation</td>
+                <td style="border:1px solid #000; padding:12px;">Executed after automation is created</td>
+                </tr>
+                <tr>
+                <td style="border:1px solid #000; padding:12px;">Optimized for learning</td>
+                <td style="border:1px solid #000; padding:12px;">Optimized for stability</td>
+                </tr>
+            </tbody>
+        </table>
+        <br>
+        <p>Neither approach replaces the other. ABA is not a substitute for automated regression testing, just as exploratory testing is not a substitute for regression testing. Instead, ABA complements traditional automation by helping teams discover defects, identify risks, and determine where automation investments provide the greatest value.</p>
+        <p>In this sense, ABA can be viewed as a preparatory automation layer that precedes conventional automation efforts. Its purpose is to improve understanding of the system under test before organizations commit resources to building and maintaining long-term automated test suites.</p>
+  
+
+        <h3>5. TOOL CATEGORIES ASSOCIATED WITH ABA</h3>
+        <p>ABA is defined by its objectives and characteristics rather than by any specific implementation technology. Consequently, ABA should not be viewed as a particular tool category, framework, or product. Instead, multiple existing and emerging tool categories may exhibit ABA characteristics when used for automated exploration prior to long-term automation efforts. The following categories frequently align with the ABA model.</p>
+        <br>
+        <p><b>Fuzzing Tools</b></p>
+        <p>Fuzzing tools automatically generate large numbers of unexpected, malformed, random, or mutated inputs in an attempt to reveal crashes, validation weaknesses, security vulnerabilities, and robustness issues. Their primary objective is discovery rather than regression prevention, making them a natural fit within the ABA framework.</p>
+        <br>
+        <p><b>Mutation and Input Variation Tools</b></p>
+        <p>Mutation-based tools systematically alter valid inputs to create alternative test scenarios. Common examples include boundary value mutations, invalid data combinations, protocol violations, field omission, truncation, expansion, and format manipulation. These approaches prioritize exploration and rapid defect discovery over long-term test maintenance.</p>
+        <br>
+        <p><b>Schema-Driven Test Generators <a class="footnote" href="#_ftn11" id="_ftnref11">[11]</a></b></p>
+        <p>Tools capable of generating tests from interface specifications, contracts, schemas, or metadata frequently demonstrate ABA characteristics. Rather than manually authoring test suites, these tools automatically create large numbers of validation and robustness scenarios designed to reveal implementation weaknesses.</p>
+        <br>
+        <p><b>AI-Assisted Test Generation Tools</b></p>
+        <p>Recent advances in artificial intelligence have enabled automated generation of exploratory test scenarios, input variations, user interactions, and validation strategies. When such tools are used primarily to discover unknown defects before formal automation begins, they align closely with ABA principles.</p>
+        <br>
+        <p><b>Protocol and Interface Exploration Tools</b></p>
+        <p>Certain tools focus on automatically exercising interfaces, endpoints, commands, or communication protocols using generated variations and behavioral exploration strategies. Their purpose is often to rapidly reveal unexpected system behavior and identify areas requiring deeper investigation.</p>
+        <br>
+        <p><b>Automated Robustness and Stress Exploration Tools</b></p>
+        <p>Some tools intentionally push systems beyond expected operating conditions through automatically generated workloads, unexpected inputs, edge cases, or environmental variations. When used for rapid exploration and discovery rather than formal performance verification, these activities can also be classified as ABA.</p>
+        <br>
+        <p>It is important to note that ABA classification depends primarily on how a tool is used rather than on the tool itself. The same technology may participate in ABA activities in one context and traditional test automation in another.</p>
+        <p>For example, a generated exploratory test executed to discover unknown defects may be considered ABA, while the same test, once selected, maintained, and continuously executed as part of a regression suite, becomes traditional automated testing.</p>
+        <p>This distinction reinforces the central argument of this paper: ABA is not a product category but a testing activity characterized by automated exploration before automated verification.</p>
+  
+        <h3>6. CASE STUDY: AUTOMATED EXPLORATION OF A PRODUCTION AI API</h3>
+        <p><b>Context</b></p>
+        <p>To demonstrate the practical application of ABA, an automated exploratory session was conducted on a high-profile production AI API using a single valid request captured from normal usage.</p>
+        <br>
+        <p><b>Method</b></p>
+        <p>Using mutation-based automated test generation, more than 200 test variations were executed within minutes. The variations covered input validation, boundary conditions, malformed payloads, protocol deviations, authorization edge cases, and oversized data scenarios. The objective was exploratory discovery rather than regression verification, and no maintainable test suite was created.</p>
+        <br>
+        <p><b>Key Findings</b></p>
+        <p>The session revealed several implementation weaknesses, including:</p>
+        <ul>
+            <li>Inconsistent security header configuration</li>
+            <li>Overly permissive cross-origin behavior</li>
+            <li>Weak input validation</li>
+            <li>Improper handling of oversized payloads</li>
+            <li>Protocol-level inconsistencies</li>
+        </ul>
+        <p>Several findings were publicly disclosed and were subsequently addressed by the service provider.</p>
+        <br>
+        <p><b>Alignment with ABA Characteristics</b></p>
+        <p>This activity exhibited the core characteristics of ABA:</p>
+        <ul>
+            <li>Generated rather than manually authored tests</li>
+            <li>Exploratory rather than verification-oriented objectives</li>
+            <li>High-volume execution</li>
+            <li>Rapid feedback</li>
+            <li>Low maintenance overhead</li>
+            <li>Disposable test artifacts</li>
+            <li>Discovery of previously unknown defects</li>
+        </ul>
+        <p><b>Discussion</b></p>
+        <p>The case illustrates how ABA can rapidly surface meaningful defects in complex real-world systems, including those developed by highly mature engineering organizations, without requiring deep prior knowledge of the implementation. The primary outcome was not regression protection but accelerated defect discovery and improved understanding of system behavior prior to formal automation efforts.</p>
+    
+        <h3>7. LIMITATIONS</h3>
+        <p>Although ABA provides significant value for rapid defect discovery and exploratory analysis, it should not be viewed as a replacement for traditional automated testing.</p>
+        <p>ABA excels at identifying unknown problems, exposing unexpected behavior, revealing validation weaknesses, and helping teams understand newly implemented functionality. However, discovering a defect and preventing its reoccurrence are fundamentally different activities.</p>
+        <p>Traditional automated testing remains essential because software systems continuously evolve. Once a defect has been identified and corrected, organizations require maintainable automated tests capable of repeatedly verifying that the issue does not reappear in future releases.</p>
+        <p>ABA does not eliminate the need for:</p>
+        <ul>
+            <li>Regression testing</li>
+            <li>Integration testing</li>
+            <li>End-to-end testing</li>
+            <li>Acceptance testing</li>
+            <li>Continuous Integration (CI/CD) quality gates</li>
+            <li>Long-term maintainable automated test suites</li>
+        </ul>
+        <p>Similarly, ABA does not replace human exploratory testing. Human testers remain uniquely capable of applying domain knowledge, intuition, creativity, and contextual reasoning that automated generation techniques cannot fully replicate.</p>
+        <p>The primary output of ABA is information. The primary output of traditional automation is confidence. ABA helps teams discover what they did not know. Traditional automation helps teams continuously verify what they already know.</p>
+        <p>For this reason, ABA should be viewed as a complementary testing layer rather than a competing methodology. Its purpose is to improve the quality and effectiveness of subsequent testing activities by exposing weaknesses before organizations invest in long-term automation efforts.</p>
+        <p>In practical terms, ABA answers the question: "What should we automate?"</p>
+        <p>Traditional automated testing answers the question: "How do we continuously verify it?"</p>
+        <p>Both activities are necessary, and neither replaces the other.</p>
+
+        <h3>CONCLUSION</h3>
+        <p>Software teams have long performed activities that exist between manual exploration and traditional automated testing. As automated test generation, fuzzing technologies, AI-assisted testing, and other exploratory automation approaches continue to evolve, this intermediate phase is becoming increasingly visible and important.</p>
+        <p>This paper introduced Automation Before Automation (ABA) as a formal term for the practice of automatically generating and executing exploratory, validation, robustness, and protocol-level tests before creating and maintaining traditional automated test suites.</p>
+        <p>The paper argues that ABA represents a distinct testing activity with objectives, characteristics, and outcomes that differ from both manual exploratory testing and conventional regression automation. While traditional automation focuses on continuously verifying known behavior, ABA focuses on rapidly discovering unknown behavior and identifying what is worth automating.</p>
+        <p>ABA does not replace exploratory testing, nor does it replace traditional automated testing. Instead, it complements both by providing a dedicated layer of automated exploration before long-term verification begins.</p>
+        <p>By defining and characterizing ABA, this paper provides a common vocabulary and conceptual framework for discussing, evaluating, and improving a testing activity that is already widely practiced but remains largely unnamed within contemporary software testing literature.</p>
+
+        <p class="meta-bottom">
+            [Liudas Jankauskas homepage: <a href="https://qaontime.com">qaontime.com</a>]<br>
+            [More research: <a href="https://qaontime.com/research">qaontime.com/research</a>]
+        </p>
+
+
+        <h3>REFERENCES</h3>
+        <div class="footnotes">
+            <hr>
+            <ol>
+                <li><a id="_ftn1" href="#_ftnref1">[1]</a> C. Kaner, J. Falk, and H. Q. Nguyen, Testing Computer Software, 2nd ed. 
+                     New York, NY, USA: Wiley, 1999. ISBN 978-0471358466.</li>
+
+                <li><a id="_ftn2" href="#_ftnref2">[2]</a> J. Bach, Exploratory Testing Explained, Satisfice Inc., 2000. Available: 
+                    <a href="https://satisfice.us/articles/et-article.pdf" target="_blank">https://satisfice.us/articles/et-article.pdf</a></li>
+
+                <li><a id="_ftn3" href="#_ftnref3">[3]</a> C. Kaner and J. Bach, Lessons Learned in Software Testing. New York, NY, USA: 
+                    Wiley, 2002. ISBN 978-0471081128.</li>
+
+                <li><a id="_ftn4" href="#_ftnref4">[4]</a> M. Bolton and J. Bach, Rapid Software Testing. Context-Driven Testing Community. 
+                    Available: <a href="https://rapid-software-testing.com" target="_blank">https://rapid-software-testing.com</a></li>
+
+                <li><a id="_ftn5" href="#_ftnref5">[5]</a> J. Itkonen and K. Rautiainen, Exploratory Testing: A Multiple Case Study, 
+                    Proceedings of the International Symposium on Empirical Software Engineering, 2005. 
+                    Available: <a href="https://www.researchgate.net/publication/4194152_Exploratory_testing_A_multiple_case_study" target="_blank">https://www.researchgate.net/publication/4194152_Exploratory_testing_A_multiple_case_study</a></li>
+
+                <li><a id="_ftn6" href="#_ftnref6">[6]</a> M. Fowler, Continuous Integration, 2006. Available: <a href="https://martinfowler.com/articles/continuousIntegration.html" target="_blank">https://martinfowler.com/articles/continuousIntegration.html</a></li>
+
+                <li><a id="_ftn7" href="#_ftnref7">[7]</a> J. Humble and D. Farley, Continuous Delivery: Reliable Software Releases through Build, Test, and Deployment Automation. Boston, MA, USA: Addison-Wesley, 2010. ISBN 978-0321601919.</li>
+
+                <li><a id="_ftn8" href="#_ftnref8">[8]</a>  ISO/IEC/IEEE 29119 Software Testing Standard. Geneva, Switzerland: International Organization for Standardization. Available: <a href="https://www.iso.org/standard/81291.html" target="_blank">https://www.iso.org/standard/81291.html</a></li>
+
+                <li><a id="_ftn9" href="#_ftnref9">[9]</a>  M. Sutton, A. Greene, and P. Amini, Fuzzing: Brute Force Vulnerability Discovery. Boston, MA, USA: Addison-Wesley, 2007. ISBN 978-0321446114.</li>
+
+                <li><a id="_ftn10" href="#_ftnref10">[10]</a>  B. P. Miller, L. Fredriksen, and B. So, An Empirical Study of the Reliability of UNIX Utilities, Communications of the ACM, 1990. Available: <a href="https://doi.org/10.1145/96267.96279" target="_blank">https://doi.org/10.1145/96267.96279</a></li>
+
+                <li><a id="_ftn11" href="#_ftnref11">[11]</a> Z. Hatfield-Dodds and D. Dygalo, Deriving Semantics-Aware Fuzzers from Web API Schemas, 2021. Available: <a href="https://arxiv.org/pdf/2112.10328" target="_blank">https://arxiv.org/pdf/2112.10328</a></li>
+
+                <li><a id="_ftn12" href="#_ftnref12">[12]</a> K. Claessen and J. Hughes, QuickCheck: A Lightweight Tool for Random Testing of Haskell Programs, Proc. Fifth ACM SIGPLAN International Conference on Functional Programming (ICFP), 2000. Available: <a href="https://doi.org/10.1145/351240.351266" target="_blank">https://doi.org/10.1145/351240.351266</a></li>
+
+            </ol>
+        </div>
+    </div>
+
+</body>
+
+</html>
