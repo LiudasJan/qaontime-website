@@ -136,17 +136,13 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-KJBT697CX9');
 </script>
 
 <body>
     <div id="wrapper">
-
         <h1>RENTGEN: Behavior-First API Testing Before Automation</h1>
-
         <h3>A deterministic method for generating structured API evidence from a single known-good request</h3>
-
         <h2>by Liudas Jankauskas</h2>
 
         <p class="meta">
@@ -157,23 +153,74 @@
         </p>
 
         <h3>Abstract</h3>
-        <p class="abstract">API testing commonly begins with a manually assembled request whose successful response is treated as evidence that an endpoint works. This establishes reachability, but it does not systematically examine input boundaries, type handling, authentication failure, protocol behavior, error semantics, response metadata, or basic performance signals. Traditional automation can cover these concerns, yet it normally requires test design, code, assertions, maintenance, and pipeline integration before useful evidence appears.</p>
-        <p>Rentgen is a local-first, behavior-first API testing system designed for the interval before a conventional automated suite exists. Starting from one known-good request, it derives structured mutations and protocol checks, executes them through a deterministic engine, and compares observed behavior with explicit, configurable expectations. The same project configuration can be retained, shared, and executed in the desktop application, command line, Docker, or continuous integration environments.</p>
-        <p>Rentgen does not prove functional correctness and is not a substitute for domain-specific tests, security assessment, or long-term regression automation. Its purpose is narrower: to expose observable API behavior quickly enough to improve decisions before teams invest in scripted automation.</p>
-        <p>This paper defines the problem Rentgen addresses, documents its operating model and test taxonomy, explains its interpretation rules and trust boundaries, reports field observations from public production APIs, and describes an experimental AI-directed extension under the Automation Before Automation (ABA) research program. The central design separation is deliberate: probabilistic systems may select what to explore, while execution and evidence evaluation remain deterministic and inspectable.</p>
+        <p class="abstract">
+            API testing often begins with a single successful request, which is frequently misinterpreted as sufficient proof
+            that an endpoint works. While this confirms basic reachability, it reveals little about how the API handles malformed
+            input, boundary values, authentication failures, protocol edge cases, or performance characteristics.
+        </p>
+        <p>
+            Rentgen is a local-first, behavior-first API testing tool designed to fill this gap. From one known-good request, it
+            automatically generates structured mutations and protocol checks, executes them deterministically, and produces clear,
+            configurable observations about the API’s real behavior. The resulting project is portable and can be reused across the
+            desktop application, CLI, Docker, and CI/CD environments.
+        </p>
+        <p>
+            Rentgen does not aim to prove functional correctness or replace domain-specific tests and regression suites. Instead,
+            it delivers fast, actionable insights during the critical phase before traditional automation is written — enabling
+            teams to discover risks and make better decisions earlier.
+        </p>
+        <p>
+            This paper describes Rentgen’s operating model, test taxonomy, deterministic evaluation rules, and field observations
+            from real-world production APIs, while also outlining an experimental AI-directed discovery architecture.
+        </p>
 
         <h3>Introduction</h3>
-        <p>API clients make it easy to send a request and inspect a response. They do not automatically establish how an API behaves when the assumptions encoded in that request are disturbed. A successful response to expected input gives a development team a useful starting point, but it supplies little evidence about malformed data, boundaries, optional fields, authorization failure, unsupported methods, oversized payloads, error handling, caching, security headers, or response-time behavior.</p>
-        <p>Conventional test automation can provide this evidence, but only after someone identifies scenarios, designs fixtures, writes assertions, controls environments, manages test data, and maintains the suite as the API changes. This creates a practical interval between the first successful request and the first maintainable automated suite.</p>
-        <p>Rentgen operates within this interval. It applies the Automation Before Automation (ABA) concept: automated exploration before automated verification. A known-good request becomes a seed from which Rentgen generates controlled variations, executes them, records the resulting behavior, and presents findings for review. The purpose is not to create an instant permanent regression suite. The purpose is to discover what the system actually does before deciding what deserves long-term automation.</p>
-        <p>The research question addressed by this paper is: <b>How much structured and repeatable evidence about an API can be produced from one valid request before a team writes a conventional automated test suite?</b></p>
+        <p>
+            Modern API clients make it trivial to send a request and receive a successful response. However, a single 2xx
+            response reveals very little about how the API actually behaves when its assumptions are challenged — malformed
+            input, boundary values, missing or optional fields, authorization failures, unsupported methods, oversized payloads,
+            or missing security protections.
+        </p>
+        <p>
+            Traditional test automation can uncover these issues, but it demands significant upfront investment: designing
+            scenarios, building fixtures, writing assertions, and maintaining the resulting suite as the API evolves. This
+            creates a practical gap between the first working request and the first meaningful, maintainable test coverage.
+        </p>
+        <p>
+            <strong>Rentgen</strong> was designed to fill this gap through the <em>Automation Before Automation (ABA)</em>
+            approach <a class="footnote" href="#_ftn7" id="_ftnref7">[7]</a>. It transforms a single known-good request into
+            a structured set of controlled variations, executes them deterministically, and reveals how the API actually behaves
+            — all before any traditional test suite is written.
+        </p>
+        <p>
+            The goal is not to replace existing automation frameworks, but to provide fast, actionable insights early enough
+            for teams to discover risks and make better-informed decisions about their testing strategy.
+        </p>
 
         <h3>1. The Testing Gap</h3>
-        <p>A 2xx response to one expected input demonstrates only that a particular interaction was accepted at a particular moment. It does not establish that malformed inputs are rejected safely, that authorization failures are represented correctly, that unsupported methods are handled consistently, or that the endpoint remains stable across boundary and load conditions. HTTP distinguishes successful, client-error, and server-error classes; a 5xx response denotes a server-side failure condition rather than controlled rejection of an invalid request <a class="footnote" href="#_ftn1" id="_ftnref1">[1]</a>.</p>
-        <p>The practical gap is therefore not the absence of API clients. Teams already have effective ways to send requests. The gap is the distance between sending a request and obtaining broad, reviewable evidence without first building a bespoke test suite.</p>
-        <p>A durable automated suite is valuable precisely because it encodes product-specific expectations. That specificity also creates an activation cost: engineers must select scenarios, build fixtures, write assertions, control environments, manage data, and maintain the suite as the API evolves. When automation begins only after implementation is considered complete, easily discoverable protocol and validation defects may survive until a later and more expensive feedback stage.</p>
-        <p>Automation Before Automation names a distinct discovery phase: automated mechanisms generate observations and failure signals before stable regression tests are designed. ABA does not compete with scripted automation. It supplies earlier evidence that helps determine what deserves a permanent test, what is product-specific, and what is merely an implementation inconsistency <a class="footnote" href="#_ftn8" id="_ftnref8">[8]</a>.</p>
-
+        <p>
+            A single 2xx response shows that one specific request succeeded under one specific set of conditions. It does not
+            establish how the API behaves when those conditions change or its assumptions are violated. When malformed or invalid
+            input produces a 5xx response, the server has encountered an unexpected failure rather than rejecting the request in
+            a controlled manner <a class="footnote" href="#_ftn1" id="_ftnref1">[1]</a>.
+        </p>
+        <p>
+            The real gap in API development is not the lack of tools for sending requests. It lies between sending a quick request
+            and obtaining <strong>broad, reviewable evidence</strong> about the API’s actual behavior — without first building and
+            maintaining a complete test suite.
+        </p>
+        <p>
+            Well-designed automated test suites are extremely valuable because they encode product-specific expectations.
+            However, this specificity creates a significant upfront cost: engineers must define scenarios, set up fixtures,
+            write assertions, manage test data, and maintain the suite as the API evolves. As a result, easily detectable
+            protocol, validation, and security issues can survive until later — and more expensive — stages of development.
+        </p>
+        <p>
+            <strong>Automation Before Automation (ABA)<a class="footnote" href="#_ftn7" id="_ftnref7">[7]</a></strong> defines a distinct early discovery phase: using automated
+            mechanisms to generate observations and failure signals <em>before</em> stable regression tests are designed.
+            This approach does not compete with traditional automation — it complements it by helping teams identify which
+            behaviors and risks deserve long-term testing investment.
+        </p>
         <table class="paper-table">
             <thead>
                 <tr>
@@ -183,181 +230,534 @@
                 </tr>
             </thead>
             <tbody>
-                <tr><td>Manual request</td><td>Can I reach the endpoint?</td><td>A known-good cURL or equivalent request</td></tr>
-                <tr><td>Rentgen / ABA</td><td>How does it behave when assumptions are disturbed?</td><td>Generated observations, findings, and project expectations</td></tr>
-                <tr><td>Scripted automation</td><td>Which agreed behaviors must remain stable?</td><td>Maintained assertions and regression suites</td></tr>
-                <tr><td>CI/CD gate</td><td>Should this build proceed?</td><td>Repeatable policy decision and report</td></tr>
+                <tr>
+                    <td>Manual request</td>
+                    <td>Can I reach the endpoint?</td>
+                    <td>A known-good cURL or equivalent request</td>
+                </tr>
+                <tr>
+                    <td>Rentgen / ABA</td>
+                    <td>How does it behave when assumptions are disturbed?</td>
+                    <td>Generated observations, findings, and project expectations</td>
+                </tr>
+                <tr>
+                    <td>Scripted automation</td>
+                    <td>Which agreed behaviors must remain stable?</td>
+                    <td>Maintained assertions and regression suites</td>
+                </tr>
+                <tr>
+                    <td>CI/CD gate</td>
+                    <td>Should this build proceed?</td>
+                    <td>Repeatable policy decision and report</td>
+                </tr>
             </tbody>
         </table>
 
         <h3>2. Design Principles</h3>
-        <p>Rentgen is built around five constraints. First, a known-good request is treated as a seed, not a specification. Second, test derivation and execution are deterministic: the same project state and environment should result in the same intended checks. Third, expectations must be visible and configurable rather than hidden in opaque scoring. Fourth, generated findings are evidence for review, not automatic proof of a vulnerability or business defect. Fifth, sensitive request and response material remains local by design.</p>
-
-        <table class="statement">
-            <tr><td><b>BEHAVIOR-FIRST:</b> Rentgen asks what the API actually does under controlled variation. It does not infer that an endpoint is correct merely because a baseline request succeeds.</td></tr>
-        </table>
+        <p>Rentgen follows five design principles that define how tests are generated, executed, evaluated, and stored.</p>
+        <ul>
+            <li>
+                <strong>Seed-based test generation.</strong>
+                A known-good request is used as the input for generating test variations. It is treated as a starting point, not as a complete API specification.
+            </li>
+            <li>
+                <strong>Deterministic test execution.</strong>
+                Request mutations, protocol checks, and evaluation rules are produced and executed by a deterministic engine. API responses are recorded as runtime observations and may vary depending on the state of the tested system and environment.
+            </li>
+            <li>
+                <strong>Configurable expectations.</strong>
+                Default expected results can be reviewed, modified, ignored, or re-enabled by the user. These decisions are stored as part of the project configuration.
+            </li>
+            <li>
+                <strong>Human review.</strong>
+                Rentgen identifies differences between expected and observed behavior. These findings require contextual review and do not automatically prove the existence of a defect or vulnerability.
+            </li>
+            <li>
+                <strong>Local execution.</strong>
+                The application and test engine run on the user’s machine. Requests are sent only to the configured target API and are not uploaded to a Rentgen backend, telemetry service, or external analytics platform.
+            </li>
+        </ul>
+        <p>
+            These principles allow Rentgen to generate repeatable API tests while keeping the test configuration explicit,
+            portable, and under the user’s control.
+        </p>
 
         <h3>3. Operating Model</h3>
-        <p><b>Input and normalization</b></p>
-        <p>The workflow begins with a request already known to succeed. In the desktop application this may be imported as cURL, then normalized into method, URL, headers, query parameters, body, authentication material, and environment variables. The baseline request is executed before derived cases so that later observations have an explicit point of comparison.</p>
-        <br>
-        <p><b>Field mapping</b></p>
-        <p>Request fields are mapped to test-relevant categories such as string, number, numeric string, email, phone, URL, IPv4, enum, bounded range, random value, or do-not-test. Mappings may be inferred and then adjusted by the user. This separates syntactic mutation from product knowledge: Rentgen provides reusable generators, while the user retains authority over field meaning and expected behavior.</p>
-        <br>
-        <p><b>Generation, execution, and evaluation</b></p>
-        <p>After mapping, the deterministic engine generates variations, executes them against the selected environment, evaluates observed behavior, and retains the evidence.</p>
-
+        <p>
+            The workflow starts with a request that is known to produce a successful response. In the desktop application,
+            the request can be imported directly from cURL format and parsed into its components: HTTP method, URL, headers,
+            query parameters, body, and authentication headers. Project variables can then be resolved using the selected
+            environment. During data-driven execution, the original request is executed first to establish a baseline for the
+            generated variations.
+        </p>
+        <p>
+            <strong>Field mapping</strong><br>
+            Request fields are classified into test-relevant categories such as string, number, numeric string, email, phone, URL,
+            IPv4, enum, bounded range, random value, or do-not-test. These mappings can be inferred by Rentgen and adjusted by the
+            user. This allows the engine to apply generic mutation generators while the user retains control over field semantics and
+            expected behavior.
+        </p>
+        <p>
+            <strong>Generation, execution, and evaluation</strong><br> Once field mappings are defined, the deterministic engine
+            generates test variations, sends the resulting requests to the target environment, evaluates the responses, and stores
+            the results.
+        </p>
         <table class="paper-table">
-            <thead><tr><th>Stage</th><th>Deterministic responsibility</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>Stage</th>
+                    <th>Deterministic responsibility</th>
+                </tr>
+            </thead>
             <tbody>
-                <tr><td>Generate</td><td>Create field mutations and protocol-level variants from stored mappings and enabled checks.</td></tr>
-                <tr><td>Execute</td><td>Send each derived request and record status, headers, body, size, and timing.</td></tr>
-                <tr><td>Evaluate</td><td>Compare the observation with the configured expectation, normally an accepted 2xx/3xx outcome or a controlled 4xx rejection.</td></tr>
-                <tr><td>Report</td><td>Expose pass, fail, manual-review, ignored, timing, and request/response evidence without concealing disabled checks.</td></tr>
-                <tr><td>Persist</td><td>Store mappings, expectations, ignored tests, collections, variables, and project state in the portable .rentgen project.</td></tr>
+                <tr>
+                    <td>Generate</td>
+                    <td>Create field mutations and protocol-level variants based on stored mappings and enabled checks.</td>
+                </tr>
+                <tr>
+                    <td>Execute</td>
+                    <td>Send each generated request and capture its status code, headers, body, size, and timing information.</td>
+                </tr>
+                <tr>
+                    <td>Evaluate</td>
+                    <td>Compare the observed response with the configured expectation: 2xx for accepted input or 4xx for controlled rejection.</td>
+                </tr>
+                <tr>
+                    <td>Report</td>
+                    <td>Present pass, fail, manual-review, ignored, and potential-bug results together with the corresponding request and response evidence. Disabled checks remain visible.</td>
+                </tr>
+                <tr>
+                    <td>Persist</td>
+                    <td>Store mappings, expectations, ignored tests, collections, variables, and project state in a portable .rentgen project file.</td>
+                </tr>
             </tbody>
         </table>
+        <p>
+            By default, Rentgen expects valid test data to produce a 2xx response and invalid test data to produce a controlled
+            4xx response. A 5xx response is treated as a server-side failure signal. These defaults are heuristics rather than
+            universal correctness rules. Starting with Rentgen v1.22, users can change the expected outcome between 2xx and 4xx
+            for individual data-driven test cases, and these expectations are stored in the project.
+        </p>
 
-        <p>The simplified default model treats 2xx–3xx as accepted behavior, 4xx as controlled handling of a problematic request, and 5xx as a server failure signal. This is a heuristic, not a universal oracle. Rentgen v1.22 therefore allows expected 2xx or 4xx outcomes to be set per data-driven case and retained in the project.</p>
 
         <h3>4. Test Taxonomy</h3>
+        <p>
+            Rentgen organizes its generated results into three broad categories: data-driven input tests, protocol and
+            security-hygiene checks, and performance insights.
+        </p>
         <p><b>Data-driven input tests</b></p>
-        <p>Data-driven tests perturb one field or structural property while preserving the rest of the seed request. Categories include missing and null values, empty strings, leading and trailing whitespace, casing changes, invalid types, malformed payloads, boundary values, enum variation, oversized strings, and format-specific invalid values. The objective is not random traffic. Each mutation corresponds to a recognizable assumption about validation or parsing.</p>
-
+        <p>
+            These tests modify one field or structural property at a time while keeping the rest of the seed request intact.
+            The goal is not random fuzzing, but targeted mutation based on the field mappings and validation assumptions defined
+            in the project.
+        </p>
         <table class="paper-table">
-            <thead><tr><th>Category</th><th>Example mutation</th><th>Signal sought</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Example mutation</th>
+                    <th>Signal sought</th>
+                </tr>
+            </thead>
             <tbody>
                 <tr><td>Presence</td><td>Remove a field or send null</td><td>Required/optional behavior and controlled rejection</td></tr>
-                <tr><td>Representation</td><td>Replace number with string or object</td><td>Type enforcement and parser resilience</td></tr>
-                <tr><td>Boundary</td><td>Use min-1, min, max, max+1</td><td>Off-by-one behavior and range enforcement</td></tr>
-                <tr><td>Normalization</td><td>Add whitespace or alter case</td><td>Canonicalization and silent data-corruption risk</td></tr>
-                <tr><td>Domain format</td><td>Invalid email, IPv4, URL, or numeric string</td><td>Field-specific validation behavior</td></tr>
-                <tr><td>Size</td><td>Oversized field or body</td><td>Payload controls and graceful failure</td></tr>
-                <tr><td>Structure</td><td>Malformed JSON or unexpected collection shape</td><td>Parser and error-handler stability</td></tr>
+                <tr><td>Representation</td><td>Replace a number with a string or object</td><td>Type enforcement and parser resilience</td></tr>
+                <tr><td>Boundary</td><td>Use min-1, min, max, and max+1</td><td>Off-by-one behavior and range enforcement</td></tr>
+                <tr><td>Normalization</td><td>Add leading/trailing whitespace or change case</td><td>Canonicalization and unintended data modification</td></tr>
+                <tr><td>Domain format</td><td>Send an invalid email, IPv4 address, URL, or numeric string</td><td>Field-specific validation behavior</td></tr>
+                <tr><td>Size</td><td>Send an oversized field or request body</td><td>Payload-size controls and graceful rejection</td></tr>
+                <tr><td>Structure</td><td>Send malformed JSON or an unexpected data structure</td><td>Parser stability and error handling</td></tr>
             </tbody>
         </table>
-
         <p><b>Protocol and security-hygiene checks</b></p>
-        <p>Rentgen includes observable checks for missing and invalid authorization material, OPTIONS behavior and Allow discovery, unsupported methods, non-existent routes, CORS behavior, reflected payload safety, uppercase domain and path handling, large payload behavior, server-version exposure, clickjacking controls, HSTS, MIME-sniffing protection, and cache control for private responses. These checks overlap with concerns identified by the OWASP API Security project, including resource consumption and security misconfiguration <a class="footnote" href="#_ftn2" id="_ftnref2">[2]</a> <a class="footnote" href="#_ftn3" id="_ftnref3">[3]</a>. They are screening checks rather than a penetration test.</p>
-
+        <p>
+            In addition to data mutations, Rentgen performs observable protocol and security-hygiene checks covering
+            authentication handling, HTTP methods, route behavior, payload handling, cross-origin behavior, reflected content,
+            and response headers. These checks overlap with several OWASP API Security concerns but remain screening-level checks
+            rather than a penetration test <a class="footnote" href="#_ftn2" id="_ftnref2">[2]</a> <a class="footnote" href="#_ftn3" id="_ftnref3">[3]</a>.
+        </p>
         <table class="paper-table">
-            <thead><tr><th>Check family</th><th>Illustrative expectation</th><th>Interpretation boundary</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>Check family</th>
+                    <th>Checks and illustrative expectations</th>
+                    <th>Interpretation boundary</th>
+                </tr>
+            </thead>
             <tbody>
-                <tr><td>Authentication</td><td>Missing or invalid credentials produce 401</td><td>A different status may be intentional; business authorization is not proven.</td></tr>
-                <tr><td>Methods</td><td>Unsupported method produces 405 or 501</td><td>Gateway policy may alter the externally observed response.</td></tr>
-                <tr><td>Discovery</td><td>OPTIONS returns 200/204 with Allow</td><td>OPTIONS support varies; absence is a signal, not automatically a defect.</td></tr>
-                <tr><td>Payload size</td><td>Oversized request produces 413</td><td>Infrastructure may enforce the limit before the application.</td></tr>
-                <tr><td>Headers</td><td>HSTS, nosniff, frame protection, private cache rules</td><td>Applicability depends on deployment and response type.</td></tr>
-                <tr><td>Routing</td><td>Unknown route produces 404; casing is consistent</td><td>Framework and security policy may intentionally conceal resources.</td></tr>
+                <tr>
+                    <td>Authentication</td>
+                    <td>Missing or invalid credentials produce 401</td>
+                    <td>Different status codes may be intentional; business-level authorization is not verified.</td>
+                </tr>
+                <tr>
+                    <td>Methods and discovery</td>
+                    <td>OPTIONS returns 200/204 with an Allow header; unsupported methods produce 405 or 501</td>
+                    <td>Gateway or proxy policies may change the observed response.</td>
+                </tr>
+                <tr>
+                    <td>Routing</td>
+                    <td>Unknown routes produce 404; uppercase domain and path variations are handled consistently</td>
+                    <td>Framework or security policy may intentionally hide resources.</td>
+                </tr>
+                <tr>
+                    <td>Payload handling</td>
+                    <td>Oversized requests produce 413 and malformed payloads are rejected without a server failure</td>
+                    <td>Infrastructure may enforce limits before the application layer.</td>
+                </tr>
+                <tr>
+                    <td>Cross-origin and reflected content</td>
+                    <td>CORS behavior is examined and submitted payload content is checked for unsafe reflection</td>
+                    <td>Expected behavior depends on the API’s intended consumers and response format.</td>
+                </tr>
+                <tr>
+                    <td>Response headers</td>
+                    <td>Server-version exposure, HSTS, clickjacking protection, X-Content-Type-Options, and cache-control are checked</td>
+                    <td>Applicability depends on the response type and deployment context.</td>
+                </tr>
             </tbody>
         </table>
-
         <p><b>Performance insights</b></p>
-        <p>Rentgen produces lightweight performance signals rather than a capacity certification. Current checks include repeated-request timing, median and percentile-oriented observations, response size, ping latency, estimated network share, load-test observations, and detection of collection responses without visible pagination parameters. These signals help distinguish obvious latency, payload, or pagination risks that merit dedicated performance work.</p>
-
+        <p>
+            Rentgen provides performance observations rather than capacity certification. It records response timing across
+            generated tests and includes a configurable concurrent load test that reports average response time, p50, p90, p95,
+            and the number of observed 4xx and 5xx responses. Additional checks cover response size, host ping latency, the
+            estimated share of response time attributable to network latency, and GET responses containing JSON arrays when the
+            request URL contains no query parameters that would indicate pagination or limiting. These results identify latency,
+            payload-size, stability, and pagination signals that may warrant dedicated performance testing.
+        </p>
         <table class="statement">
-            <tr><td><b>NOT A LOAD-TESTING CLAIM:</b> A quick generated run can reveal suspicious behavior; it cannot establish production capacity, saturation limits, or service-level compliance without a controlled performance model.</td></tr>
+            <tr>
+                <td>
+                    <b>INTERPRETATION LIMIT:</b> The generated load test provides timing and failure signals under the configured
+                    request count and concurrency. It does not establish production capacity, saturation limits, or service-level
+                    compliance without a controlled workload model and representative test environment.
+                </td>
+            </tr>
         </table>
 
         <h3>5. Portable Project Configuration</h3>
-        <p>A .rentgen project is the bridge between discovery and repeatability. It can contain requests, collections, static and dynamic environment variables, history, field mappings, expected results, and ignored checks. Because configuration travels with the project, a reviewer can see both what was tested and which expectations were intentionally changed or disabled. This makes the artifact suitable for source control or another team-controlled storage mechanism without requiring hosted synchronization.</p>
-        <p>The desktop application supports interactive configuration and review. The CLI executes exported projects locally, through Docker, or in CI/CD, with collection and environment selection and machine-readable JSON reporting. The same conceptual test definition therefore moves from exploratory use to repeatable pipeline execution without rewriting it in another framework.</p>
-
+        <p>
+            A <code>.rentgen</code> project file stores the configuration and state associated with a Rentgen project: requests,
+            collections, static and dynamic environment variables, field mappings, expected outcomes, ignored checks, and
+            execution history. The stored mappings, expectations, and enabled checks allow Rentgen to regenerate and evaluate the
+            same intended test cases across repeated runs, while the observed responses continue to reflect the current state of
+            the target API.
+        </p>
+        <p>
+            The project can be shared or maintained in team-controlled storage without relying on a hosted synchronization
+            service. When project files contain authentication credentials or other sensitive environment values, they must be
+            protected or sanitized before being committed to source control.
+        </p>
+        <p>
+            The desktop application provides interactive project configuration and result review. The same project can be
+            executed through the CLI with collection and environment selection and machine-readable JSON reporting. This allows
+            tests configured in the desktop application to run through the CLI, Docker, or CI/CD pipelines without being rewritten
+            in another testing framework<a class="footnote" href="#_ftn5" id="_ftnref5">[5]</a>.
+        </p>
         <table class="paper-table">
-            <thead><tr><th>Surface</th><th>Role</th><th>Typical use</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>Surface</th>
+                    <th>Role</th>
+                    <th>Typical use</th>
+                </tr>
+            </thead>
             <tbody>
-                <tr><td>Desktop</td><td>Model and review</td><td>Import request, map fields, tune expectations, inspect evidence</td></tr>
-                <tr><td>CLI</td><td>Repeat</td><td>Execute a project or collection from a terminal</td></tr>
-                <tr><td>Docker</td><td>Isolate</td><td>Run the same engine in a reproducible container environment</td></tr>
-                <tr><td>CI/CD</td><td>Gate and observe</td><td>Produce reports and fail a pipeline according to configured policy</td></tr>
+                <tr><td>Desktop application</td><td>Interactive configuration and review</td><td>Import requests, adjust field mappings, configure expectations, and inspect results</td></tr>
+                <tr><td>CLI</td><td>Headless execution</td><td>Run a project or selected collection from a terminal or script</td></tr>
+                <tr><td>Docker</td><td>Containerized execution</td><td>Run the Rentgen engine in a controlled container environment</td></tr>
+                <tr><td>CI/CD</td><td>Automated execution and gating</td><td>Generate reports and fail pipelines according to configured evaluation rules</td></tr>
             </tbody>
         </table>
 
         <h3>6. Local-First Trust Model</h3>
-        <p>API requests frequently contain credentials, personal data, internal hostnames, proprietary schemas, and regulated information. Rentgen treats locality as an architectural constraint: the desktop tool does not require accounts, hosted synchronization, telemetry, or a cloud execution service. Requests, responses, projects, and generated observations remain under the operator's control. This allows use in environments where SaaS API tooling or external AI is restricted.</p>
-        <p>Local-first does not mean risk-free. Operators remain responsible for endpoint authorization, test-data handling, credential storage, side effects, traffic volume, and the security of the host machine and project files. Generated tests should be run only against systems the operator is authorized to test. Destructive or financially consequential endpoints require explicit controls beyond generic test generation.</p>
+        <p>
+            API requests often contain credentials, personal or regulated data, internal hostnames, and proprietary schemas.
+            Rentgen treats locality as an architectural constraint: the desktop application does not require user accounts,
+            hosted synchronization, telemetry, or a Rentgen-operated cloud execution service. Apart from sending requests to
+            the target API selected by the operator, Rentgen does not transmit requests, responses, projects, or generated
+            results to Rentgen infrastructure. These artifacts remain on the operator’s machine. This allows Rentgen to be used
+            in environments where SaaS API testing tools or external AI services are restricted.
+        </p>
+        <p>
+            Local execution does not eliminate operational risk. The operator remains responsible for endpoint authorization,
+            test-data handling, credential storage, possible side effects, traffic volume, and the security of the host machine
+            and project files. Generated tests must only be executed against systems the operator is authorized to test.
+            Endpoints that modify or delete data, initiate transactions, or produce other consequential effects require additional
+            safeguards beyond default test generation.
+        </p>
 
         <h3>7. Evidence and Field Observations</h3>
-        <p>Rentgen has been exercised against public production APIs including ChatGPT, Amazon, Jira, Proton Pass, Revolut, Trello, Azure DevOps, and Stripe. Published case narratives report observations such as malformed-input 500 responses, late payload rejection, HTML returned from a JSON API, unexpected method handling, authorization inconsistencies, missing response protections, and high latency. The ChatGPT case led to fixes after responsible reporting <a class="footnote" href="#_ftn7" id="_ftnref7">[7]</a>.</p>
-        <p>These cases demonstrate feasibility and defect-discovery potential, but they do not constitute a controlled comparative evaluation. Different endpoints, configurations, time periods, and authorization contexts were used. The findings should therefore be treated as field observations, not as evidence that one vendor or API is generally less secure or lower quality than another. Reproducible benchmark research remains future work.</p>
-
+        <p>
+            Rentgen has been tested against public production APIs including ChatGPT, Amazon, Jira, Proton Pass, Revolut,
+            Trello, Azure DevOps, and Stripe. Published case studies document observations such as malformed-input 500
+            responses, late payload rejection, HTML returned from JSON endpoints, unexpected method handling, authorization
+            inconsistencies, missing response protections, and elevated latency. In the ChatGPT case, responsible disclosure
+            led to fixes by OpenAI <a class="footnote" href="#_ftn6" id="_ftnref6">[6]</a>.
+        </p>
+        <p>
+            These cases demonstrate the feasibility of the approach and Rentgen’s ability to surface concrete production signals.
+            However, they do not constitute a controlled comparative benchmark. Different endpoints, configurations, time periods,
+            authorization contexts, and generated test sets were used. The results should therefore be interpreted as field
+            observations rather than general assessments of any API or vendor.
+        </p>
+        
         <table class="paper-table">
-            <thead><tr><th>Evidence class</th><th>What it supports</th><th>What it does not support</th></tr></thead>
-            <tbody>
-                <tr><td>Engine source and test definitions</td><td>The implemented mutation and evaluation behavior</td><td>The correctness of every product-specific expectation</td></tr>
-                <tr><td>Public API case study</td><td>A concrete observation occurred under stated conditions</td><td>General ranking of an API or vendor</td></tr>
-                <tr><td>Release downloads</td><td>Interest and repeated acquisition of builds</td><td>Unique active users, retention, or willingness to pay</td></tr>
-                <tr><td>User-configured project</td><td>Repeatability of an agreed local test model</td><td>Completeness of all API risks</td></tr>
-            </tbody>
+        <thead>
+            <tr>
+                <th>Public API</th>
+                <th>Generated Tests</th>
+                <th>Observed Signals</th>
+                <th>Reported Follow-up</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>ChatGPT</td>
+                <td>200+ generated tests</td>
+                <td>
+                    A 10 MB request produced 500 instead of controlled payload rejection; permissive CORS behavior was observed;
+                    invalid field types were accepted with 200 OK
+                </td>
+                <td>OpenAI fixed several findings</td>
+            </tr>
+            <tr>
+                <td>Amazon</td>
+                <td>100+ generated tests</td>
+                <td>
+                    Missing authentication produced 400 instead of 401; an uppercase path returned a CloudFront HTML error
+                    page from a JSON API; an approximately 10 MB request was processed before returning 404 instead of an early
+                    413 rejection
+                </td>
+                <td>No vendor follow-up documented</td>
+            </tr>
+            <tr>
+                <td>Proton Pass</td>
+                <td>100+ generated tests</td>
+                <td>
+                    An approximately 10 MB request returned 400 after body parsing instead of an early 413 rejection;
+                    missing authentication material initially produced 400 before 401 was returned with the required headers
+                    present; a non-existent route returned 405 even though the response body indicated that the route was not
+                    found
+                </td>
+                <td>No vendor follow-up documented</td>
+            </tr>
+            <tr>
+                <td>Jira</td>
+                <td>100+ generated tests</td>
+                <td>
+                    An unsupported HTTP method returned 403 instead of 405 or 501; a non-existent route returned 405 instead
+                    of 404; an approximately 10 MB request was fully processed before returning 400 instead of an early 413
+                    rejection
+                </td>
+                <td>No vendor follow-up documented</td>
+            </tr>
+            <tr>
+                <td>Revolut</td>
+                <td>100+ generated tests</td>
+                <td>
+                    The amount field accepted a numeric string with 200 OK, while malformed strings and boolean values produced
+                    500 errors; invalid types supplied for wallet identifiers also produced 500 errors; unsupported enum values
+                    caused additional 500 responses
+                </td>
+                <td>No vendor follow-up documented</td>
+            </tr>
+            <tr>
+                <td>Trello</td>
+                <td>100+ generated tests</td>
+                <td>
+                    Malformed values for the dsc field produced 500 errors; a null card name was accepted with 200 OK and created
+                    a card with an empty title; the isTemplate boolean field accepted a string value and created the card
+                </td>
+                <td>No vendor follow-up documented</td>
+            </tr>
+            <tr>
+                <td>Azure DevOps</td>
+                <td>100+ generated tests</td>
+                <td>
+                    An empty displayName produced a 500 error; boolean and numeric values were accepted and caused the field to
+                    be stored as null; an approximately 10 MB request produced 500 instead of a controlled 413 rejection
+                </td>
+                <td>No vendor follow-up documented</td>
+            </tr>
+            <tr>
+                <td>Stripe</td>
+                <td>100+ generated tests</td>
+                <td>
+                    An unsupported HTTP method returned 403 with an HTML nginx response instead of a structured 405 response;
+                    the email field accepted multiple syntactically invalid address formats
+                </td>
+                <td>No vendor follow-up documented</td>
+            </tr>
+        </tbody>
         </table>
 
         <h3>8. Relationship to Existing Testing</h3>
-        <p>Rentgen replaces neither API clients nor programmable test frameworks. Postman, Playwright, REST Assured, contract-testing tools, security scanners, and load-testing systems address broader or deeper workflows. Rentgen occupies the earlier moment when a working request exists but a maintained test model does not. Its output can reveal where product-specific assertions are needed and which generated checks are stable enough to become continuous gates.</p>
-        <p>The practical sequence is cumulative: use Rentgen to discover and triage observable behavior; fix or accept the findings; encode important business rules in a durable suite; and use CI/CD to enforce the behaviors whose long-term value exceeds their maintenance cost. NIST's Secure Software Development Framework likewise frames verification as part of a broader secure development discipline, not as a single-tool outcome <a class="footnote" href="#_ftn4" id="_ftnref4">[4]</a>.</p>
-
+        <p>
+            Rentgen does not replace API clients such as Postman or cURL, nor programmable test frameworks such as REST Assured,
+            Playwright, or contract-testing tools. It is also not intended to replace dedicated security scanners or load-testing
+            systems. These tools address different phases, depths, and objectives of testing.
+        </p>
+        <p>
+            Most importantly, Rentgen is not designed to model product-specific happy paths, multi-step workflows, business rules,
+            or stateful user scenarios. Those belong in maintainable, programmable test suites. The absence of such capabilities is not an unfinished feature or a limitation to be removed; it is an intentional boundary of the tool.</p>
+        <p>
+            Rentgen operates in the interval after a request first works but before a maintained test model exists. Starting from
+            one known-good request, it systematically explores variations and records observable behavior, exposing validation
+            gaps, protocol inconsistencies, error-handling weaknesses, and early performance or security signals. These
+            observations help teams decide what must be fixed, accepted, investigated further, or encoded as durable automation.
+        </p>
+        <p>
+            Evaluating Rentgen as a replacement for a complete test framework is therefore a category error. Its purpose is not to
+            automate everything a team already knows must work. Its purpose is to rapidly expose behaviors and test conditions
+            that the team may not yet know it should be testing.
+        </p>
+        <p>The intended workflow is cumulative:</p>
         <table class="statement">
-            <tr><td>Build or change an endpoint → Run Rentgen → Review and configure findings → Create maintainable automation → Enforce through CI/CD</td></tr>
+            <tr>
+                <td>
+                    Build or change an endpoint
+                    → Run Rentgen for discovery
+                    → Review and triage observations
+                    → Encode valuable business and regression checks in maintainable automation
+                    → Enforce them through CI/CD
+                </td>
+            </tr>
         </table>
+        <p>
+            This relationship aligns with broader secure development practices, such as those described in NIST’s Secure Software
+            Development Framework, which treats verification as part of a larger engineering discipline rather than the outcome
+            of a single tool <a class="footnote" href="#_ftn4" id="_ftnref4">[4]</a>.
+        </p>
 
-        <h3>9. Limitations and Validity Threats</h3>
-        <p>Rentgen produces structured evidence, but its coverage and conclusions remain bounded by the supplied request, configured environment, observable interface, and generic expectations.</p>
-
+        <h3>9. Limitations and Validity Considerations</h3>
+        <p>
+            Rentgen produces structured and repeatable evidence. As with any black-box testing approach, the resulting coverage
+            depends on the supplied requests, observable responses, configured environment, and available domain context.
+        </p>
         <table class="paper-table">
-            <thead><tr><th>Limitation</th><th>Consequence</th><th>Mitigation</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>Limitation</th>
+                    <th>Consequence</th>
+                    <th>Mitigation</th>
+                </tr>
+            </thead>
             <tbody>
-                <tr><td>Seed dependence</td><td>Generated coverage is bounded by the supplied request and reachable endpoint.</td><td>Use multiple representative requests and collections.</td></tr>
-                <tr><td>Weak business oracle</td><td>Generic status expectations cannot prove domain correctness.</td><td>Configure expectations and add product-specific assertions elsewhere.</td></tr>
-                <tr><td>Side effects</td><td>Mutation of state-changing endpoints can create data or trigger workflows.</td><td>Use controlled environments, disposable data, and explicit exclusions.</td></tr>
-                <tr><td>Intermediaries</td><td>Gateways, WAFs, proxies, and caches may produce the observed response.</td><td>Record the environment and inspect full request/response evidence.</td></tr>
-                <tr><td>Heuristic findings</td><td>A failed hygiene check may be intentional or inapplicable.</td><td>Support ignore/re-enable and require human review.</td></tr>
-                <tr><td>No full security assurance</td><td>Generated checks cover only observable classes.</td><td>Use threat modeling, code review, and specialist security assessment.</td></tr>
-                <tr><td>No benchmark control</td><td>Published case studies differ in context.</td><td>Develop a versioned, reproducible benchmark suite.</td></tr>
+                <tr>
+                    <td>Input scope</td>
+                    <td>Generated exploration follows the supplied requests, mapped fields, and reachable endpoints.</td>
+                    <td>Use representative requests and collections covering different parts of the API.</td>
+                </tr>
+                <tr>
+                    <td>Domain context</td>
+                    <td>Generic checks reveal observable behavior but do not determine product-specific business correctness.</td>
+                    <td>Use the findings to guide dedicated business and regression assertions where needed.</td>
+                </tr>
+                <tr>
+                    <td>State-changing operations</td>
+                    <td>Tests against mutation endpoints may create data or trigger workflows.</td>
+                    <td>Use controlled environments, disposable data, and explicit test exclusions.</td>
+                </tr>
+                <tr>
+                    <td>Infrastructure influence</td>
+                    <td>Gateways, WAFs, proxies, and caches may affect the responses observed by the tool.</td>
+                    <td>Record the environment and inspect the captured request and response evidence.</td>
+                </tr>
+                <tr>
+                    <td>Context-dependent findings</td>
+                    <td>Some detected inconsistencies may reflect intentional API or infrastructure decisions.</td>
+                    <td>Review findings in context and ignore or re-enable individual checks as appropriate.</td>
+                </tr>
+                <tr>
+                    <td>Case-study generalizability</td>
+                    <td>Published observations represent specific endpoints, configurations, and points in time.</td>
+                    <td>Treat them as evidence of detection capability rather than comparative product benchmarks.</td>
+                </tr>
             </tbody>
         </table>
+        <p>
+            These boundaries define how Rentgen evidence should be interpreted; they do not reduce its value as an early,
+            systematic API discovery layer.
+        </p>
 
-        <h3>10. AI-Directed Discovery: Boruzele</h3>
-        <p>Boruzele is an experimental exploratory-testing agent within the Rentgen.io research initiative. It observes an application UI, builds a compact model of interactive elements, asks a language model to select the next interaction, executes that interaction deterministically through Playwright, and records console errors, HTTP 5xx responses, navigation state, and action history. The loop repeats until a configured stopping condition <a class="footnote" href="#_ftn9" id="_ftnref9">[9]</a>.</p>
-        <p>The intended Rentgen platform architecture extends this separation across UI and API layers. A language model may decide which path, action, or API behavior deserves exploration. Rentgen then generates and executes deterministic tests and evaluates the resulting evidence. Observations return to the decision layer, which chooses the next exploration target. The model therefore guides discovery but does not become the final oracle.</p>
-
-        <table class="paper-table">
-            <thead><tr><th>Layer</th><th>Responsibility</th><th>Trust characteristic</th></tr></thead>
-            <tbody>
-                <tr><td>Observation</td><td>Extract UI/API context and prior signals</td><td>Deterministic collection</td></tr>
-                <tr><td>Decision</td><td>Select the next exploratory objective or interaction</td><td>Probabilistic and replaceable LLM</td></tr>
-                <tr><td>Execution</td><td>Perform UI action and/or generated API tests</td><td>Deterministic Playwright/Rentgen engine</td></tr>
-                <tr><td>Evaluation</td><td>Apply explicit expectations and retain evidence</td><td>Inspectable deterministic rules</td></tr>
-                <tr><td>Learning loop</td><td>Feed discoveries into subsequent decisions</td><td>Bounded by goals, steps, and policy</td></tr>
-            </tbody>
-        </table>
-
+        <h3>10. AI-Directed API Discovery with Rentgen</h3>
+        <p>
+            Rentgen.io is researching an AI-directed extension of Rentgen in which a language model participates directly in a
+            live API discovery session. This direction differs fundamentally from workflows that use an LLM to generate test
+            cases or automation code for later execution. The model does not produce a test suite. It decides what Rentgen should
+            send next.
+        </p>
+        <p>The interaction begins with the same minimal input already used by Rentgen: one working cURL request. Rentgen executes
+            the request and returns a structured observation containing the response, request history, and detected signals. The
+            language model then selects the next API interaction: it may change a field, value, type, header, method, path,
+            payload structure, or another request property. Rentgen executes the selected request, captures what happened, and
+            returns the new observation to the model.
+        </p>
         <table class="statement">
-            <tr><td><b>SAFETY SEPARATION:</b> Use AI to choose where to look. Use deterministic mechanisms to execute, measure, and report what happened.</td></tr>
+            <tr>
+                <td>
+                    One working cURL
+                    → Rentgen executes the request
+                    → LLM observes the result
+                    → LLM decides what to send next
+                    → Rentgen executes again
+                    → The cycle continues
+                    → Rentgen produces an evidence-backed discovery report
+                </td>
+            </tr>
         </table>
-
-        <p>This architecture is research in progress. It raises open questions about exploration coverage, hallucinated intent, action safety, reproducibility, model cost, stopping criteria, and the transition from transient discoveries to maintainable tests. Those questions should be evaluated empirically rather than hidden behind an AI-powered testing label.</p>
-
-        <h3>11. Research Agenda</h3>
-        <p>The next research stage should move from case narratives toward reproducible measurement. A useful benchmark would provide versioned APIs with seeded defects across validation, authentication, protocol semantics, payload handling, response headers, latency, and state transitions. Rentgen could then be compared with a baseline manual request, generic fuzzing, and scripted tests using time-to-first-signal, defect-class recall, false-positive review cost, execution reproducibility, and maintenance effort.</p>
-        <p>For AI-directed ABA, experiments should compare models and policies on path diversity, unique signal discovery, repeated-action rate, invalid-action rate, cost, and deterministic replay. Importantly, the evaluation should separate decision quality from execution quality: an LLM may choose an unproductive path while the deterministic engine still performs the selected operation correctly.</p>
+        <p>
+            Each response can change the direction of the exploration. An unexpected 2xx response, a server-side error, reflected
+            input, inconsistent validation, a changed response structure, or an unusual timing signal may cause the model to
+            investigate that behavior further. The exploration path is therefore created during execution rather than predefined
+            before the session begins.
+        </p>
+        <table class="statement">
+            <tr>
+                <td><b>NOT TEST GENERATION:</b> The LLM does not write tests for somebody or something else to execute later. It
+                    makes runtime testing decisions, Rentgen sends the requests, and each real response informs the next decision.
+                </td>
+            </tr>
+        </table>
+        <p>
+            Boruzele provides a working proof of concept for this runtime decision loop. It observes the current UI, asks a
+            language model to choose the next interaction, executes that interaction through Playwright, collects failure signals,
+            and returns the updated state for the next decision. It does not generate test cases or a maintainable automated suite
+            <a class="footnote" href="#_ftn8" id="_ftnref8">[8]</a>.</p>
+        <p>
+            The proposed Rentgen extension applies the same principle to APIs. In this setting, the control loop is potentially
+            simpler and more constrained: the action is an API request, the observation is an API response, and both can be captured
+            precisely. Rentgen already provides the request execution, evidence collection, deterministic checks, and reporting
+            foundation. The language model would add adaptive exploratory decision-making on top of that foundation.</p>
+        <p>
+            The intended experience is straightforward: provide any working cURL request and receive a report produced through
+            autonomous, response-driven API exploration. This would extend Automation Before Automation from systematic predefined
+            variation to adaptive discovery, allowing the system to investigate behaviors that were not explicitly encoded in advance
+            <a class="footnote" href="#_ftn7">[7]</a>.</p>
+        <p>
+            This remains a Rentgen.io research direction rather than a capability of the current Rentgen release. It would complement,
+            not replace, the existing deterministic engine: deterministic checks provide repeatability and explicit expectations, while
+            AI-directed exploration can search for unexpected paths and decide dynamically where deeper investigation may be valuable.
+        </p>
 
         <h3>12. Conclusion</h3>
-        <p>Rentgen formalizes a practical but underserved stage of API development: the period after a request first works and before a maintained automated suite exists. By expanding one known-good request into structured, configurable, and portable checks, it produces early evidence about validation, protocol behavior, security hygiene, and performance signals without requiring scripts or cloud execution.</p>
-        <p>Its contribution is not a universal test oracle. It is a disciplined separation of concerns: the seed request supplies access, mappings supply test meaning, deterministic generators supply variation, explicit expectations supply evaluation, and human review supplies context. The same project can then move into CLI, Docker, and CI/CD execution.</p>
-        <p>Under the wider ABA research program, probabilistic AI can direct exploration while Rentgen and Playwright retain deterministic responsibility for execution and evidence. This preserves the creative reach of model-guided discovery without surrendering test results to an opaque model judgment.</p>
-
-        <h3>Appendix A. Capability Boundary</h3>
-        <table class="paper-table">
-            <thead><tr><th>Rentgen does</th><th>Rentgen does not claim</th></tr></thead>
-            <tbody>
-                <tr><td>Generate structured checks from a known-good request</td><td>Prove complete functional correctness</td></tr>
-                <tr><td>Expose status, headers, body, timing, and configuration evidence</td><td>Replace domain-specific assertions</td></tr>
-                <tr><td>Run locally and move projects into CLI, Docker, and CI</td><td>Provide a required hosted cloud runner or account</td></tr>
-                <tr><td>Screen for API security-hygiene signals</td><td>Replace penetration testing or threat modeling</td></tr>
-                <tr><td>Support configurable expectations and ignored checks</td><td>Declare every non-default behavior a defect</td></tr>
-                <tr><td>Guide future automation priorities</td><td>Eliminate test maintenance</td></tr>
-            </tbody>
-        </table>
-
+        <p>
+            Rentgen demonstrates that useful API testing can begin before a traditional automated test suite exists. Starting
+            from one known-good request, it systematically executes request variations and captures evidence about validation,
+            robustness, protocol behavior, security hygiene, and performance. This makes the interval between a working endpoint
+            and maintained automation an active discovery stage rather than an untested gap.
+        </p>
+        <p>
+            As an implementation of Automation Before Automation, Rentgen helps teams discover what deserves investigation,
+            correction, or later regression coverage. Its current deterministic engine makes this discovery repeatable and
+            portable across desktop, CLI, Docker, and CI/CD. The proposed AI-directed extension would add adaptive exploration:
+            an LLM decides what request to try next from the observed response, while Rentgen remains responsible for execution
+            and evidence. The result is a distinct progression from one working cURL to systematic discovery today and autonomous,
+            response-driven API exploration in the future.
+        </p>
+            
         <p class="meta-bottom">
             [Rentgen: <a href="https://rentgen.io">rentgen.io</a>]<br>
             [Liudas Jankauskas homepage: <a href="https://qaontime.com">qaontime.com</a>]<br>
@@ -376,15 +776,13 @@
 
                 <li><a id="_ftn4" href="#_ftnref4">[4]</a> M. Souppaya, K. Scarfone, and D. Dodson, Secure Software Development Framework (SSDF) Version 1.1, NIST SP 800-218, Feb. 2022. Available: <a href="https://doi.org/10.6028/NIST.SP.800-218" target="_blank">https://doi.org/10.6028/NIST.SP.800-218</a></li>
 
-                <li><span>[5]</span> M. Nottingham, E. Wilde, and S. Dalal, Problem Details for HTTP APIs, RFC 9457, IETF, July 2023. Available: <a href="https://www.rfc-editor.org/rfc/rfc9457" target="_blank">https://www.rfc-editor.org/rfc/rfc9457</a></li>
+                <li><a id="_ftn5" href="#_ftnref5">[5]</a>Rentgen, Project Repository and Releases. Available: <a href="https://github.com/Rentgen-io/Rentgen" target="_blank">https://github.com/Rentgen-io/Rentgen</a></li>
 
-                <li><span>[6]</span> Rentgen, Project Repository and Releases. Available: <a href="https://github.com/Rentgen-io/Rentgen" target="_blank">https://github.com/Rentgen-io/Rentgen</a></li>
+                <li><a id="_ftn6" href="#_ftnref6">[6]</a> Rentgen, API Stories and Case Studies. Available: <a href="https://rentgen.io/api-stories" target="_blank">https://rentgen.io/api-stories</a></li>
 
-                <li><a id="_ftn7" href="#_ftnref7">[7]</a> Rentgen, API Stories and Case Studies. Available: <a href="https://rentgen.io/api-stories" target="_blank">https://rentgen.io/api-stories</a></li>
+                <li><a id="_ftn7" href="#_ftnref7">[7]</a> L. Jankauskas, Automation Before Automation (ABA): An Intermediate Phase in Modern Software Testing, 2026. Available: <a href="https://qaontime.com/research/automation-before-automation.html" target="_blank">https://qaontime.com/research/automation-before-automation.html</a></li>
 
-                <li><a id="_ftn8" href="#_ftnref8">[8]</a> L. Jankauskas, Automation Before Automation (ABA): An Intermediate Phase in Modern Software Testing, 2026. Available: <a href="https://qaontime.com/research/automation-before-automation.html" target="_blank">https://qaontime.com/research/automation-before-automation.html</a></li>
-
-                <li><a id="_ftn9" href="#_ftnref9">[9]</a> Rentgen.io Research Initiative, Boruzele: AI-Powered Exploratory Testing Agent, 2026. Available: <a href="https://github.com/Rentgen-io/boruzele" target="_blank">https://github.com/Rentgen-io/boruzele</a></li>
+                <li><a id="_ftn8" href="#_ftnref8">[8]</a> Rentgen.io Research Initiative, Boruzele: AI-Powered Exploratory Testing Agent, 2026. Available: <a href="https://github.com/Rentgen-io/boruzele" target="_blank">https://github.com/Rentgen-io/boruzele</a></li>
             </ol>
         </div>
     </div>
