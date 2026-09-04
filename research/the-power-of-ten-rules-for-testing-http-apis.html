@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>RENTGEN: Behavior-First API Testing Before Automation</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="A technical white paper describing Rentgen, a deterministic behavior-first API testing system operating in the Automation Before Automation phase.">
+    <style>
+    body {
+        margin: 0;
+        padding: 2rem;
+    }
+    #wrapper {
+        max-width: 60rem;
+        margin: 0 auto;
+    }
+
+    h1, h2, h3 {
+        text-align: center;
+        text-transform: uppercase;
+        margin-top: 2rem;
+    }
+
+    h1 {
+        font-size: 28px;
+    }
+
+    h2 {
+        font-size: 16px;
+    }
+
+    h3 {
+        font-size: 16px;
+    }
+
+    h1 + h2 {
+        margin-top: 1rem;
+    }
+
+    .meta {
+        text-align: center;
+        font-size: 14px;
+        margin: 1rem 0 2rem 0;
+    }
+
+    p {
+        margin: 0;
+        text-align: justify;
+    }
+
+    p + p {
+        text-indent: 1.5rem;
+    }
+
+    p.spaced {
+        margin: 1rem 0;
+    }
+
+    .footnote {
+        font-size: 13px;
+        vertical-align: super;
+    }
+
+    .meta-bottom {
+        text-align: right;
+        margin-top: 1rem;
+    }
+
+    .footnotes {
+        margin-top: 2rem;
+    }
+
+    .footnotes hr {
+        border: 0;
+        height: 1px;
+        max-width: 30rem;
+        background-color: black;
+        margin: 1rem 0;
+    }
+
+    .footnotes ol {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .footnotes li {
+        margin: 1rem 0 0 0;
+    }
+
+    table.paper-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+    }
+
+    table.paper-table th {
+        border: 1px solid #000;
+        padding: 12px;
+        text-align: center;
+        background: #d9d9d9;
+    }
+
+    table.paper-table td {
+        border: 1px solid #000;
+        padding: 12px;
+        vertical-align: top;
+    }
+
+    .statement {
+        width: 100%;
+        border: 1px solid #000;
+        border-collapse: collapse;
+        margin: 1rem 0;
+    }
+
+    .statement td {
+        padding: 25px;
+        text-align: center;
+    }
+
+    .statement.code-block td {
+    padding: 16px 20px;
+    text-align: left;
+    }
+
+    .statement.code-block pre {
+        margin: 0;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        line-height: 1.5;
+    }
+
+    @media print {
+        body { padding: 0; }
+        a { color: #000; text-decoration: none; }
+        table, tr, td, th { break-inside: avoid; }
+        h1, h2, h3 { break-after: avoid; }
+    }
+    </style>
+    <link rel="canonical" href="https://qaontime.com/research/rentgen-white-paper.html">
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-KJBT697CX9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-KJBT697CX9');
+</script>
+
+<body>
+    <div id="wrapper">
+        <h1>THE POWER OF TEN – RULES FOR TESTING HTTP APIs</h1>
+        <h2>by Liudas Jankauskas</h2>
+
+        <p class="meta">
+            [First version: September 2026]<br>
+            [<a href="/">qaontime.com</a>]<br>
+            pdf-version: [<a href="https://qaontime.com/research/the-power-of-ten-rules-for-testing-http-apis.pdf">PDF</a>]<br>
+            www-version: [<a href="https://qaontime.com/research/the-power-of-ten-rules-for-testing-http-apis.html">WWW</a>]
+        </p>
+
+        <h3>Abstract</h3>
+        <p class="abstract">
+            Explicitly inspired by Gerard J. Holzmann’s The Power of Ten – Rules for Developing Safety-Critical Code
+            <a class="footnote" href="#_ftn1" id="_ftnref1">[1]</a>, this paper applies the concept of a small, memorable, and 
+            enforceable rule set to API testing. It proposes ten implementation-agnostic rules derived from recurring failure 
+            patterns observed during nearly two decades of testing API-driven systems across multiple industries.
+        </p>
+        <p>
+            The rules address critical areas frequently underrepresented in conventional API testing, including input validation, 
+            authorization, response semantics, predictable failure handling, protocol behavior, operational constraints, and 
+            lessons learned from production incidents.
+        </p>
+        <p>
+            Rather than defining an exhaustive testing methodology, The Power of Ten – Rules for Testing HTTP APIs establishes a 
+            compact set of principles that can guide both manual and automated testing. Its objective is to help teams detect 
+            systemic weaknesses earlier and improve the reliability, security, robustness, and long-term maintainability of APIs.
+        </p>
+        
+        <h3>Introduction</h3>
+        <p>
+            Postman’s 2025 State of the API Report found that 82% of surveyed organizations had adopted some level of API-first 
+            development, illustrating how central APIs have become to modern software systems <a class="footnote" href="#_ftn7" id="_ftnref7">[7]</a>. 
+            API testing is often considered sufficient once an endpoint accepts a valid request and returns the expected business 
+            data. However, this confirms only a narrow part of its behavior. An API also defines how a system responds to invalid 
+            input, insufficient permissions, unsupported methods, repeated requests, concurrent operations, large result sets, 
+            dependency failures, and increasing load. These behaviors are not secondary technical details. For an API consumer, 
+            they are part of the product.
+        </p>
+        <p>
+            Many serious API defects survive conventional testing precisely because the expected business scenario works. The weakness 
+            appears outside that scenario: a forbidden operation is reported as an authentication failure; an unsupported method returns 
+            a misleading response; malformed input reaches an unhandled code path; one nonexistent identifier returns 404 while another 
+            causes 500; or an unbounded query remains unnoticed until the volume of data increases.
+        </p>
+        <p>
+            Effective API testing must therefore examine more than whether the returned data is correct. It must evaluate response 
+            semantics, authorization boundaries, input handling, consistency of failure, resource constraints, state transitions, and 
+            operational behavior. These concerns apply whether testing is performed manually, through automated test suites, or with 
+            exploratory testing tools <a class="footnote" href="#_ftn3" id="_ftnref3">[3]</a>.
+        </p>
+        <p>The ten rules presented in this paper are intended to guide that work. They do not prescribe a particular tool or attempt 
+            to enumerate every possible test case. Instead, each rule identifies a class of risk that should be considered whenever 
+            an API is designed, tested, changed, or investigated after a production incident. Together, the rules help teams move 
+            beyond endpoint-level happy-path validation and evaluate the API as a complete, observable system.
+        </p>
+
+        <h3>Rule Selection and Scope</h3>
+        <p>
+            The initial rules were derived from recurring API failure patterns observed during 18 years of professional testing 
+            across e-commerce, high-volume advertising platforms, banking, blockchain-based applications, government systems, 
+            and mission-critical environments. They were further refined through systematic exploration of API behavior beyond 
+            expected business scenarios.
+        </p>
+        <p>
+            Each candidate rule was evaluated against five criteria. It had to:
+        </p>
+        <ul>
+            <li>Address a recurring rather than project-specific problem.</li>
+            <li>Represent a significant functional, security, reliability, or operational risk.</li>
+            <li>Remain applicable across HTTP API implementations, architectures, and domains.</li>
+            <li>Describe a concern that can be tested and supported by observable evidence.</li>
+            <li>Be sufficiently distinct from the other rules to avoid conceptual overlap.</li>
+        </ul>
+        <p>
+            Candidates that were too narrow, technology-specific, difficult to verify, or already covered by a stronger rule were 
+            removed or merged. Conceptual overlap was assessed according to the underlying risk and testing objective, not merely 
+            the observable signal used as evidence. Two rules could therefore involve the same response element while testing 
+            fundamentally different properties.
+        </p>
+        <p>
+            The remaining candidates were cross-checked against established HTTP semantics, API security guidance, and publicly 
+            documented industry failure patterns. This comparison was used to confirm their broader relevance and sharpen the boundaries 
+            between individual rules.
+        </p>
+        <p>
+            The final set was limited to ten following the conceptual precedent established by Gerard J. Holzmann’s <em>The Power of Ten</em>. 
+            The limit served as a prioritization constraint: narrower, lower-impact, or overlapping concerns were excluded in favor of 
+            rules with broader applicability, greater potential consequences, and clear testing outcomes.
+        </p>
+
+        <h3>1. EVERY ENDPOINT MUST BE TESTED AS AN INDEPENDENT ATTACK SURFACE</h3>
+        <p><b>Explanation</b></p>
+        <p>
+            Every API endpoint should be treated as an independent attack surface regardless of its intended audience or deployment 
+            scope. The distinction between "public" and "internal" APIs is often temporary and operational rather than technical.
+        </p>
+        <p>
+            A common assumption in software projects is that internal endpoints require less scrutiny because they are not directly 
+            exposed to external consumers. In practice, this assumption frequently proves incorrect. Internal APIs are routinely 
+            consumed by additional teams, third-party integrations, mobile applications, partner systems, automation tools, and 
+            future services that were not part of the original design.
+        </p>
+        <p>
+            If an endpoint can receive requests from another system, application, or user, it should be considered externally 
+            reachable from a testing perspective. The fact that an endpoint is currently used by only one client does not reduce 
+            the potential impact of security, authorization, performance, or data exposure defects.
+        </p>
+        <p>
+            For this reason, every endpoint should be evaluated as an independent entry point into the system and tested accordingly.
+        </p>
+        <p><b>Example</b></p>
+        <p>
+            Many organizations initially develop APIs exclusively for their own web or mobile applications. Over time, external 
+            consumers discover that these applications communicate through well-defined HTTP endpoints and begin interacting with 
+            the APIs directly.
+        </p>
+        <p>
+            This pattern has been observed repeatedly across the industry. APIs originally intended for internal application use 
+            eventually become unofficial integration points for customers, partners, automation scripts, or third-party services. 
+            Once this occurs, assumptions about trusted consumers quickly become invalid.
+        </p>
+        <p>
+            A common anti-pattern is the statement: "This endpoint is internal, therefore it does not require the same level of 
+            testing."
+        </p>
+        <p>
+            History shows that internal endpoints often become external dependencies without any architectural changes to the API 
+            itself.
+        </p>
+        <p><b>Testing Guidance</b></p>
+        <p>Each endpoint should be tested independently for:</p>
+        <ul>
+            <li>Authentication requirements</li>
+            <li>Authorization boundaries</li>
+            <li>Input validation</li>
+            <li>Error handling</li>
+            <li>Rate limiting</li>
+            <li>Sensitive information disclosure</li>
+            <li>Supported HTTP methods</li>
+            <li>Response code correctness</li>
+        </ul>
+        <p>Testing should not assume that an endpoint is safe merely because it is currently consumed by a trusted application.</p>
+        <p>
+            Similarly, client-side controls such as CORS policies should never be considered a security boundary. While CORS may 
+            restrict browser-based requests, it does not prevent direct server-to-server communication, automation tools, scripts, 
+            or custom clients from interacting with the endpoint.
+        </p>
+        <p>
+            From a testing perspective, if a request can reach the endpoint, the endpoint must be treated as part of the attack surface.
+        </p>
+
+        <h3>2. EVERY ENDPOINT MUST BE TESTED WITH INVALID INPUT</h3>
+        <p><b>Explanation</b></p>
+        <p>An API endpoint that has only been tested with valid input has not been adequately tested.</p>
+        <p>
+            Most software defects do not occur when users provide expected data under expected conditions. They occur when systems 
+            receive malformed, unexpected, incomplete, oversized, or otherwise invalid input that was not anticipated during development.
+        </p>
+        <p>
+            A properly designed API should clearly define what input is accepted and reject all input that falls outside those boundaries. 
+            Invalid requests should be handled gracefully and consistently without causing application failures, data corruption, service 
+            degradation, or unpredictable behavior.
+        </p>
+        <p>
+            Input validation is not merely a usability concern. It is a reliability, security, and operational stability requirement. 
+            Invalid data accepted into a system often becomes significantly more expensive to correct once it propagates through databases, 
+            integrations, reporting systems, analytics pipelines, or downstream services.
+        </p>
+        <p>
+            For this reason, API testing should focus not only on proving that valid requests succeed, but also on proving that invalid 
+            requests fail safely <a class="footnote" href="#_ftn5" id="_ftnref5">[5]</a>.
+        </p>
+        <p><b>Example</b></p>
+        <p>Consider an endpoint responsible for creating a user account:</p>
+        <table class="statement code-block">
+            <tr>
+                <td><code>{<br>
+                        "name": "John Smith",<br>
+                        "email": "john@example.com",<br>
+                        "phone": "+971501234567"<br>
+                    }</code></td>
+            </tr>
+        </table>
+        <p>A successful test confirms that valid data is accepted and stored correctly.</p>
+        <p>However, significantly more information can be obtained by submitting invalid requests, such as:</p>
+        <ul>
+            <li>Invalid email formats</li>
+            <li>Missing mandatory fields</li>
+            <li>Unexpected properties</li>
+            <li>Incorrect data types</li>
+            <li>Oversized payloads</li>
+            <li>Empty strings</li>
+            <li>Null values</li>
+            <li>Malformed JSON</li>
+        </ul>
+        <p>
+            A common anti-pattern occurs when invalid requests trigger internal server errors (HTTP 500). In such cases, malformed 
+            user input is capable of causing application failures rather than being rejected through proper validation.
+        </p>
+        <p>
+            Another frequently observed failure occurs when extremely large values are accepted without restrictions. For example, 
+            an API may successfully store a user name containing several megabytes of text. While the initial request succeeds, the 
+            oversized data can later disrupt reporting systems, user interfaces, search functionality, mobile applications, integrations, 
+            or other dependent services.
+        </p>
+        <p>
+            The resulting failure often appears far away from the original source of the problem, making diagnosis significantly more difficult.
+        </p>
+        <p><b>Testing Guidance</b></p>
+        <p>Every endpoint should be tested with invalid and unexpected input, including:</p>
+        <ul>
+            <li>Missing required fields</li>
+            <li>Invalid formats</li>
+            <li>Invalid data types</li>
+            <li>Null values</li>
+            <li>Empty values</li>
+            <li>Boundary values</li>
+            <li>Oversized strings</li>
+            <li>Oversized payloads</li>
+            <li>Malformed JSON structures</li>
+            <li>Unexpected properties</li>
+        </ul>
+        <p>
+            The expected outcome should be a controlled client error response, typically within the 4xx range, accompanied by a 
+            meaningful validation message.
+        </p>
+        <p>Invalid input should never result in:</p>
+        <ul>
+            <li>HTTP 500 Internal Server Error</li>
+            <li>Application crashes</li>
+            <li>Database corruption</li>
+            <li>Service instability</li>
+            <li>Resource exhaustion</li>
+            <li>Unbounded memory consumption</li>
+        </ul>
+        <p>
+            From a testing perspective, the objective is not to prove that valid data works. The objective is to identify how the 
+            system behaves when assumptions about the input are violated.
+        </p>
+
+        <h3>3. RESPONSE CODES ARE PART OF THE FUNCTIONALITY</h3>
+        <p><b>Explanation</b></p>
+        <p>
+            HTTP response codes are not implementation details. They are part of the observable behavior of an API and therefore part 
+            of its functionality.
+        </p>
+        <p>
+            An API communicates not only through response bodies, but also through status codes. These codes define whether a request 
+            succeeded, failed due to client input, failed due to authentication, failed due to authorization, failed because a resource 
+            does not exist, or failed because the server encountered an unexpected condition <a class="footnote" href="#_ftn2" id="_ftnref2">[2]</a>.
+        </p>
+        <p>
+            Incorrect response codes create ambiguity for both humans and systems. Developers integrating with the API may debug 
+            the wrong problem, client applications may handle errors incorrectly, monitoring systems may classify incidents inaccurately, 
+            and security weaknesses may be exposed unintentionally.
+        </p>
+        <p>
+            For this reason, response code correctness should be tested as deliberately as response body correctness.
+        </p>
+        <p><b>Example</b></p>
+        <p>
+            A common anti-pattern occurs when an unauthenticated request returns 403 Forbidden instead of 401 Unauthorized. In 
+            such a case, the client may incorrectly assume that authentication succeeded but the user lacks permission. 
+            Developers can then spend unnecessary time debugging authorization rules when the actual problem is missing or 
+            invalid authentication.
+        </p>
+        <p>
+            Another common failure occurs when authorization behavior leaks resource existence. For example, assume a user 
+            requests another user's resource:
+        </p>
+        <table class="statement code-block">
+            <tr>
+                <td><code>GET /users/12345/orders<br>
+                    Authorization: Bearer valid-token-for-different-user</code></td>
+            </tr>
+        </table>
+        <p>
+            If the API returns 403 Forbidden, it may confirm that the resource exists but the requester is not allowed to access 
+            it. If the same endpoint returns 404 Not Found for a non-existing resource, an attacker can distinguish between existing 
+            and non-existing identifiers. This creates a resource enumeration risk.
+        </p>
+        <p>
+            Incorrect method handling is another frequent anti-pattern. If a client sends an unsupported HTTP method and receives 
+            400 Bad Request, the response incorrectly suggests that the request syntax or body is invalid. The correct response 
+            should normally indicate that the method itself is not allowed, such as 405 Method Not Allowed. Without this distinction, 
+            developers may waste time debugging request payloads when the actual problem is the HTTP method.
+        </p>
+        <p><b>Testing Guidance</b></p>
+        <p>API testing should verify response codes for both successful and unsuccessful scenarios.</p>
+        <p>At minimum, each endpoint should be tested for:</p>
+        <ul>
+            <li>Successful requests</li>
+            <li>Missing authentication</li>
+            <li>Invalid authentication</li>
+            <li>Insufficient authorization</li>
+            <li>Non-existing resources</li>
+            <li>Access to resources owned by another user</li>
+            <li>Invalid input</li>
+            <li>Malformed request bodies</li>
+            <li>Unsupported HTTP methods</li>
+            <li>Unexpected server failures</li>
+        </ul>
+        <p>Expected behavior should be explicit and consistent. Common expectations include:</p>
+        <ul>
+            <li>200 OK for successful retrieval</li>
+            <li>201 Created for successful resource creation</li>
+            <li>204 No Content for successful operations without a response body</li>
+            <li>400 Bad Request for malformed or invalid client input</li>
+            <li>401 Unauthorized for missing or invalid authentication</li>
+            <li>403 Forbidden for authenticated users who are not permitted to perform an action</li>
+            <li>404 Not Found when a resource does not exist or when revealing its existence would create a security risk</li>
+            <li>405 Method Not Allowed when the HTTP method is not supported</li>
+            <li>409 Conflict for state conflicts</li>
+            <li>429 Too Many Requests when rate limits are exceeded <a class="footnote" href="#_ftn8" id="_ftnref8">[8]</a></li>
+            <li>500 Internal Server Error only for unexpected server-side failures</li>
+        </ul>
+        <p>
+            The important point is not that every API must use every status code in the same way. The important point is that the 
+            API must use response codes deliberately, consistently, and as part of its contract. From a testing perspective, 
+            an incorrect response code is a functional defect.
+        </p>
+
+        <h3>4. AUTHORIZATION MUST BE TESTED SEPARATELY FROM AUTHENTICATION</h3>
+        <p><b>Explanation</b></p>
+        <p>Authentication and authorization are closely related concepts, but they address fundamentally different questions.</p>
+        <p>Authentication determines who is making a request.</p>
+        <p>Authorization determines what that authenticated entity is allowed to do.</p>
+        <p>
+            In practice, many testing efforts focus heavily on authentication mechanisms such as login flows, token generation, 
+            session management, or identity verification, while authorization receives significantly less attention. As a result, 
+            systems may successfully verify user identities while still exposing data or functionality to unauthorized users.
+        </p>
+        <p>
+            From a testing perspective, proving that a user can authenticate successfully does not provide any assurance that authorization 
+            controls are implemented correctly.
+        </p>
+        <p>
+            Authorization failures are often among the most severe defects discovered in production systems because they can result 
+            in unauthorized access to sensitive information, privilege escalation, modification of protected resources, or complete 
+            compromise of business functionality <a class="footnote" href="#_ftn4" id="_ftnref4">[4]</a>.
+        </p>
+        <p>
+            For this reason, authorization must be treated as an independent testing concern and verified separately from authentication.
+        </p>
+        <p><b>Example</b></p>
+        <p>Consider an API that allows users to retrieve their profile information:</p>
+        <table class="statement code-block">
+            <tr>
+                <td><code>GET /users/12345/profile<br>
+                    Authorization: Bearer valid-token</code></td>
+            </tr>
+        </table>
+        <p>The endpoint correctly requires authentication and returns the profile data belonging to the authenticated user.</p>
+        <p>A common testing mistake is to verify only that the user can successfully access their own profile.</p>
+        <p>The more important question is what happens when the same user attempts to access another user's profile:</p>
+        <table class="statement code-block">
+            <tr>
+                <td><code>GET /users/67890/profile<br>
+                    Authorization: Bearer valid-token-for-user-12345</code></td>
+            </tr>
+        </table>
+        <p>
+            If the API returns another user's data, the authentication mechanism may be functioning perfectly while authorization 
+            is completely broken.
+        </p>
+        <p>
+            The defect is not related to identity verification. The defect is that the system failed to enforce ownership boundaries.
+        </p>
+        <p>
+            Another frequently observed anti-pattern is the assumption that authentication automatically provides security. 
+            Development teams often verify that users can log in, tokens are generated correctly, expired tokens are rejected, 
+            and invalid credentials are denied. At the same time, insufficient effort is spent validating whether authenticated 
+            users can access, modify, delete, or enumerate resources belonging to other users.
+        </p>
+        <p>
+            A similar problem occurs when authorization testing is performed only through the user interface. Since APIs can be 
+            called directly, UI restrictions provide little assurance that backend authorization controls are functioning correctly.
+        </p>
+        <p>
+            In many real-world incidents, attackers did not bypass authentication. They simply used valid credentials to access 
+            resources they should never have been permitted to access.
+        </p>
+        <p><b>Testing Guidance</b></p>
+        <p>Authorization testing should be performed independently of authentication testing.</p>
+        <p>For each endpoint that exposes user-specific, tenant-specific, or protected data, testers should verify:</p>
+        <ul>
+            <li>Access to owned resources</li>
+            <li>Access to resources owned by other users</li>
+            <li>Access using different user roles</li>
+            <li>Access using elevated roles</li>
+            <li>Access using restricted roles</li>
+            <li>Cross-tenant access attempts</li>
+            <li>Resource modification attempts</li>
+            <li>Resource deletion attempts</li>
+            <li>Enumeration attempts using predictable identifiers</li>
+        </ul>
+        <p>
+            Testing should focus on answering the following question: Can an authenticated user perform actions beyond those 
+            explicitly permitted?
+        </p>
+        <p>A useful practical approach is to create multiple test accounts with different roles, permissions, ownership 
+            relationships, and tenancy boundaries, then systematically repeat the same requests using each identity.
+        </p>
+        <p>Authentication testing proves that users are who they claim to be.</p>
+        <p>Authorization testing proves that users can do only what they are allowed to do.</p>
+        <p>From a testing perspective, a successfully authenticated user should never be considered a trusted user.</p>
+
+        <h3>5. EVERY COLLECTION ENDPOINT MUST HAVE BOUNDED RESULTS</h3>
+        <p><b>Explanation</b></p>
+        <p>
+            Every API endpoint that returns a collection of objects should enforce explicit limits on the amount of data returned 
+            in a single request.
+        </p>
+        <p>
+            While returning all available records may appear acceptable during early development or testing, unbounded collection 
+            endpoints inevitably become a scalability and reliability problem as data volumes grow. An endpoint that performs 
+            adequately with hundreds of records may become unusable when the dataset grows to thousands, millions, or tens of 
+            millions of records.
+        </p>
+        <p>
+            Bounded result sets protect both the server and the client. They reduce memory consumption, database load, network 
+            traffic, response times, and the risk of service degradation under normal or abusive usage patterns.
+        </p>
+        <p>
+            For this reason, collection endpoints should implement mechanisms such as pagination, result limits, cursor-based 
+            navigation, or other approaches that explicitly constrain the amount of data returned in a single response.
+        </p>
+        <p><b>Example</b></p>
+        <p>Consider an endpoint that returns customer records:</p>
+        <table class="statement code-block">
+            <tr>
+                <td><code>GET /customers</code></td>
+            </tr>
+        </table>
+        <p>
+            During initial development, the system may contain only a few hundred customers, and returning the entire dataset 
+            appears harmless.
+        </p>
+        <p>
+            Over time, however, the number of records may grow significantly. The same endpoint can eventually return hundreds 
+            of thousands or millions of objects in a single response. What was once an acceptable implementation can become a 
+            source of excessive database load, increased memory consumption, network congestion, and poor user experience.
+        </p>
+        <p>
+            A common anti-pattern is the assumption that current data volumes represent future production conditions. As a result, 
+            endpoints are released without pagination, limits, or filtering capabilities.
+        </p>
+        <p>
+            Another frequently observed anti-pattern occurs when APIs technically support pagination but do not enforce reasonable 
+            limits. In such cases, a client may simply request:</p>
+        <table class="statement code-block">
+            <tr>
+                <td><code>GET /customers?limit=1000000</code></td>
+            </tr>
+        </table>
+        <p>effectively bypassing the intended protection mechanisms.</p>
+        <p>
+            In production environments, unbounded collection endpoints often become attractive targets for resource exhaustion 
+            attacks because a single request can trigger disproportionate consumption of computational resources.
+        </p>
+        <p><b>Testing Guidance</b></p>
+        <p>For every endpoint that returns a collection of objects, testers should verify:</p>
+        <ul>
+            <li>Pagination support</li>
+            <li>Maximum page size limits</li>
+            <li>Default page size behavior</li>
+            <li>Cursor-based navigation, where applicable</li>
+            <li>Filtering capabilities</li>
+            <li>Sorting behavior</li>
+            <li>Performance under large datasets</li>
+            <li>Response times near configured limits</li>
+            <li>Protection against excessive page sizes</li>
+        </ul>
+        <p>Testing should include attempts to:</p>
+        <ul>
+            <li>Request unusually large page sizes</li>
+            <li>Omit pagination parameters entirely</li>
+            <li>Retrieve complete datasets repeatedly</li>
+            <li>Combine pagination with complex filters and sorting</li>
+            <li>Access collections containing large numbers of records</li>
+        </ul>
+        <p>
+            The objective is not only to verify that pagination exists, but also to confirm that the API remains predictable, 
+            performant, and resilient as data volumes increase.
+        </p>
+        <p>
+            From a testing perspective, an endpoint that can return an unbounded dataset should be considered a scalability defect 
+            waiting to become a production incident.
+        </p>
+
+        <h3>6. APIs MUST FAIL PREDICTABLY</h3>
+        <p><b>Explanation</b></p>
+        <p>
+            Failure is an inevitable characteristic of all software systems. Network interruptions, unavailable dependencies, 
+            exhausted resources, database outages, invalid requests, software defects, and unexpected runtime conditions cannot 
+            be eliminated entirely.
+        </p>
+        <p>
+            The objective of API testing is therefore not to prove that failures never occur, but to verify that failures are 
+            handled predictably, consistently, and transparently.
+        </p>
+        <p>
+            A predictable failure provides sufficient information for clients to understand what happened, while preventing 
+            unnecessary disclosure of internal implementation details. An unpredictable failure creates ambiguity, complicates 
+            troubleshooting, and may expose weaknesses that can be exploited intentionally or unintentionally.
+        </p>
+        <p>
+            From a consumer's perspective, an API should behave deterministically. Similar failure conditions should produce 
+            similar responses regardless of when, where, or how often they occur.
+        </p>
+        <p><b>Example</b></p>
+        <p>Consider an endpoint that normally returns customer information.</p>
+        <p>When the requested customer does not exist, the API returns:</p>
+        <table class="statement code-block">
+            <tr>
+                <td><code>404 Not Found</code></td>
+            </tr>
+        </table>
+        <p>When the request is malformed, the API returns:</p>
+        <table class="statement code-block">
+            <tr>
+                <td><code>400 Bad Request</code></td>
+            </tr>
+        </table>
+        <p>When the client exceeds a configured rate limit, the API returns:</p>
+        <table class="statement code-block">
+            <tr>
+                <td><code>429 Too Many Requests</code></td>
+            </tr>
+        </table>
+        <p>These responses clearly communicate the nature of the problem and allow the client to respond appropriately.</p>
+        <p>A common anti-pattern occurs when fundamentally different failures all result in generic server errors:</p>
+        <table class="statement code-block">
+            <tr>
+                <td><code>500 Internal Server Error</code></td>
+            </tr>
+        </table>
+        <p>For example:</p>
+        <ul>
+            <li>Invalid input returns 500</li>
+            <li>Missing resources return 500</li>
+            <li>Unsupported operations return 500</li>
+            <li>Validation failures return 500</li>
+        </ul>
+        <p>
+            In such situations, clients cannot distinguish between user mistakes, temporary conditions, and actual system defects.
+        </p>
+        <p>
+            Furthermore, excessive generation of 5xx responses can create unnecessary operational load and may expose opportunities 
+            for resource exhaustion attacks, where malformed requests repeatedly trigger expensive error-handling paths.
+        </p>
+        <p>
+            A server error should indicate that the server failed to fulfill a valid request. It should not become the default 
+            response for expected or controllable conditions.
+        </p>
+        <p><b>Testing Guidance</b></p>
+        <p>API testing should verify not only successful behavior but also failure behavior.</p>
+        <p>For each endpoint, testers should evaluate:</p>
+        <ul>
+            <li>Validation failures</li>
+            <li>Missing resources</li>
+            <li>Authorization failures</li>
+            <li>Authentication failures</li>
+            <li>Unsupported operations</li>
+            <li>Rate limit violations</li>
+            <li>Dependency failures</li>
+            <li>Timeout conditions</li>
+            <li>Unexpected internal errors</li>
+        </ul>
+        <p>Testing should verify that:</p>
+        <ul>
+            <li>Similar failures produce consistent responses</li>
+            <li>Appropriate status codes are returned</li>
+            <li>Error messages are meaningful and actionable</li>
+            <li>Sensitive implementation details are not exposed</li>
+            <li>Error responses follow a consistent structure <a class="footnote" href="#_ftn9" id="_ftnref9">[9]</a></li>
+            <li>Clients can distinguish between different categories of failures</li>
+        </ul>
+        <p>Particular attention should be given to 5xx responses.</p>
+        <p>
+            Any reproducible request capable of consistently generating a 5xx response should be investigated as a potential 
+            defect, regardless of whether the request itself is valid.
+        </p>
+        <p>From a testing perspective, predictable failure handling is a feature, not an implementation detail.</p>
+
+        <h3>7. STATE-CHANGING OPERATIONS MUST BE TESTED UNDER RETRY, REPLAY, AND CONCURRENCY</h3>
+        <p><b>Explanation</b></p>
+        <p>
+            Any API operation that creates, modifies, transfers, or deletes state must be tested under repeated and 
+            overlapping execution. A state-changing request may work correctly when executed once and still produce serious 
+            defects when retried, replayed, or processed concurrently.
+        </p>
+        <p>
+            In distributed systems, a client cannot always determine whether an operation succeeded. A connection may close 
+            after the server has committed a change but before the response reaches the client. The client, SDK, gateway, 
+            background worker, or message consumer may then repeat the request.
+        </p>
+        <p>Retry, replay, and concurrency represent related but distinct conditions:</p>
+        <ul>
+            <li>A <strong>retry</strong> occurs when a request is repeated because the result of the original attempt is 
+                unknown or considered unsuccessful.</li>
+            <li>A <strong>replay</strong> occurs when a previously submitted request is sent again after the original 
+                operation has already completed or outside its intended execution context.</li>
+            <li><strong>Concurrency</strong> occurs when multiple operations affecting the same state overlap before that 
+                state has stabilized.</li>
+        </ul>
+        <p>
+            Without deliberate handling, these conditions can produce duplicate payments, repeated refunds, duplicate orders, 
+            lost updates, oversold inventory, exceeded limits, invalid state transitions, or partially completed business 
+            operations.
+        </p>
+        <p>
+            HTTP method semantics provide useful expectations, but they do not prove that an implementation behaves correctly. 
+            PUT and DELETE are defined as idempotent, yet an implementation may still trigger unintended side effects each time 
+            the request is received. Conversely, a POST operation may be designed for safe retry through idempotency keys, 
+            request deduplication, unique constraints, or another application-level mechanism.
+        </p>
+        <p>
+            Testing must therefore evaluate the actual business outcome and resulting system state, not infer safety from the 
+            HTTP method or response code alone.
+        </p>
+        <p>
+            The correct behavior depends on the API contract. A repeated request may return the original result, report that 
+            the operation has already completed, or reject the request as a conflict. A concurrent update may be serialized, 
+            merged, or rejected because it was based on a stale state. The implementation mechanism may differ, but repetition 
+            and concurrency must not silently corrupt state or apply an operation more times than intended.
+        </p>
+        <p><b>Example</b></p>
+        <p>Consider a payment API:</p>
+        <table class="statement code-block">
+            <tr>
+                <td><code>POST /payments<br>
+                    Idempotency-Key: payment-order-7842<br>
+                    {<br>
+                        "orderId": "7842",<br>
+                        "amount": 100,<br>
+                        "currency": "EUR"<br>
+                    }</code></td>
+            </tr>
+        </table>
+        <p>
+            The server processes the payment successfully and stores the transaction. However, the network connection closes 
+            before the client receives the response. Because the outcome is unknown, the client sends the same request again.
+        </p>
+        <p>
+            If the API creates a second transaction, each request may appear valid when examined independently, but the 
+            resulting business behavior is incorrect: the customer has been charged twice for the same order.
+        </p>
+        <p>
+            When the same idempotency key and request are repeated, the API should recognize the previously processed operation 
+            and avoid creating an additional payment. The returned status and response body may depend on the API contract, 
+            but the payment must not be applied twice.
+        </p>
+        <p>
+            The same protection must work when both requests arrive concurrently. An implementation that checks for an existing 
+            idempotency key and only later records it may still allow two service instances to process the payment simultaneously.
+        </p>
+        <p>
+            Concurrency creates a different variation of the problem. Suppose two clients retrieve the same account or order, 
+            modify different fields, and submit their updates at nearly the same time. If both updates are accepted without 
+            version or conflict detection, the later write may silently overwrite the earlier one. Each request succeeds, 
+            but one valid change is lost.
+        </p>
+        <p><b>Testing Guidance</b></p>
+        <p>
+            Testing should begin by identifying every operation that can change a persistent or externally observable state. 
+            This includes not only database updates, but also payments, messages, notifications, audit records, file creation, 
+            calls to external systems, and asynchronous jobs.
+        </p>
+        <p>For each state-changing operation, testing should include:</p>
+        <ul>
+            <li>Repeating the identical request immediately after a successful response.</li>
+            <li>Retrying after a simulated timeout, connection loss, or interrupted response.</li>
+            <li>Replaying the request after the original operation has completed.</li>
+            <li>Sending identical requests sequentially and concurrently.</li>
+            <li>Sending different updates concurrently against the same resource.</li>
+            <li>Updating a resource using an outdated version, timestamp, or entity tag.</li>
+            <li>Repeating operations across multiple service instances where applicable.</li>
+            <li>Interrupting processing between internal or external side effects.</li>
+            <li>Executing related operations in an unexpected order.</li>
+            <li>
+                Verifying behavior when a completed operation is replayed after an idempotency or deduplication window has expired.
+            </li>
+        </ul>
+        <p>Where idempotency keys are supported, tests should verify:</p>
+        <ul>
+            <li>Reuse of the same key with the same request.</li>
+            <li>Concurrent requests using the same key.</li>
+            <li>Reuse of the same key with different request data.</li>
+            <li>Missing, malformed, expired, and previously consumed keys.</li>
+            <li>Consistency of the response returned for repeated requests.</li>
+            <li>Whether deduplication covers all business and external side effects.</li>
+        </ul>
+        <p>
+            Where versioning or conditional updates are supported, tests should confirm that stale operations cannot silently overwrite 
+            newer state. Depending on the contract, conflicts may be reported through responses such as 409 Conflict or, when HTTP preconditions 
+            are used, 412 Precondition Failed.
+        </p>
+        <p>
+            Assertions must extend beyond the immediate HTTP response. Tests should inspect the final resource state, related 
+            records, external transactions, emitted events, audit history, and asynchronous processing results. Race-condition 
+            tests should be executed repeatedly because timing-dependent failures may not appear in every run.
+        </p>
+        <p>
+            A state-changing operation satisfies this rule only when repeated and overlapping requests produce a defined outcome 
+            without unintended duplication, lost updates, partial execution, or broken business invariants.
+        </p>
+
+        <h3>8. EVERY API MUST DEFEND ITSELF AGAINST ABUSE</h3>
+        <p><b>Explanation</b></p>
+        <p>
+            API design should assume that clients will eventually behave in unexpected, inefficient, or abusive ways.
+        </p>
+        <p>
+            Not all abusive behavior is malicious. Poorly implemented integrations, software defects, retry storms, misconfigured 
+            automation, excessive polling, and accidental misuse can generate traffic patterns that place significant stress on a 
+            system.
+        </p>
+        <p>
+            A common design mistake is to assume that all API consumers will behave responsibly. In practice, APIs operate in environments 
+            where client behavior cannot be fully controlled. As a result, every API should contain mechanisms that prevent individual 
+            consumers from consuming disproportionate amounts of shared resources.
+        </p>
+        <p>
+            The objective is not to prevent all abuse. The objective is to ensure that excessive consumption by one client cannot significantly 
+            degrade service availability for others.
+        </p>
+        <p>
+            For this reason, abuse resistance should be considered a fundamental API quality attribute rather than a purely operational 
+            concern.
+        </p>
+        <p><b>Example</b></p>
+        <p>Consider an endpoint that performs an expensive database query.</p>
+        <p>
+            Under normal usage, the endpoint may receive a few requests per minute and perform adequately. However, a malfunctioning 
+            integration repeatedly retries failed requests without delay and begins sending hundreds of requests per second.
+        </p>
+        <p>
+            Although each request is technically valid, the cumulative effect may exhaust database connections, consume excessive 
+            computational resources, increase response times, and reduce availability for other consumers.
+        </p>
+        <p>
+            A similar situation can occur when clients repeatedly request large datasets, aggressively poll for updates, or perform 
+            resource-intensive operations without restriction.
+        </p>
+        <p>A common anti-pattern is the assumption that valid requests cannot be harmful.</p>
+        <p>
+            Development teams often focus on validating request structure, authentication, and authorization while overlooking the 
+            cumulative impact of request volume. If a request is technically valid, it is frequently assumed that no additional 
+            protections are required.
+        </p>
+        <p>
+            For example, an API may allow clients to repeatedly execute expensive search operations, generate large reports, or 
+            retrieve substantial amounts of data without any meaningful restrictions. While each individual request succeeds as 
+            designed, the aggregate resource consumption can become unsustainable.
+        </p>
+        <p>
+            Another common anti-pattern is the belief that abuse prevention is solely an infrastructure responsibility. Development 
+            teams may rely entirely on load balancers, API gateways, web application firewalls, or network controls while the API 
+            itself contains no meaningful protections against excessive resource consumption.
+        </p>
+        <p>
+            In practice, abuse resistance is a shared responsibility between infrastructure and application design.
+        </p>
+        <p>
+            In each case, the system fails not because individual requests are invalid, but because the aggregate volume of requests 
+            exceeds the assumptions made during design.
+        </p>
+        <p>
+            The resulting outage may be operationally indistinguishable from a denial-of-service attack even when no malicious 
+            intent exists.
+        </p>
+        <p><b>Testing Guidance</b></p>
+        <p>Testing should evaluate how the API behaves under conditions of excessive or abnormal usage.</p>
+        <p>This includes verifying:</p>
+        <ul>
+            <li>Rate limiting mechanisms</li>
+            <li>Request quotas</li>
+            <li>Retry behavior</li>
+            <li>Resource-intensive operations</li>
+            <li>Large-volume data retrieval</li>
+            <li>Concurrent request handling</li>
+            <li>Protection against resource exhaustion</li>
+            <li>Fair resource allocation between consumers</li>
+        </ul>
+        <p>
+            Testing should also verify that protective mechanisms respond predictably and communicate clear failure conditions to 
+            clients.
+        </p>
+        <p>
+            The objective is not merely to confirm that limits exist, but to verify that the system remains available, stable, 
+            and predictable when consumer behavior exceeds normal operating assumptions.
+        </p>
+        <p>
+            From a testing perspective, an API that assumes all consumers will behave correctly is an API that has not been 
+            fully tested.
+        </p>
+
+        <h3>9. TEST THE PROTOCOL, NOT ONLY THE BUSINESS LOGIC</h3>
+        <p><b>Explanation</b></p>
+        <p>
+            Many API testing efforts focus almost exclusively on business functionality.
+        </p>
+        <p>
+            Testers verify that users can create accounts, retrieve data, update records, submit transactions, and perform other 
+            business operations. While these activities are essential, they represent only one aspect of API behavior.
+        </p>
+        <p>
+            An API is not merely a collection of business functions. It is also an implementation of a communication protocol. 
+            HTTP methods, status codes, headers, content negotiation, caching directives, authentication mechanisms, and idempotency 
+            guarantees are all part of the API contract.
+        </p>
+        <p>
+            When protocol behavior is not tested, APIs may appear functionally correct while still violating client expectations, 
+            interoperability requirements, performance assumptions, or industry standards.
+        </p>
+        <p>For this reason, API testing should validate both business behavior and protocol behavior.</p>
+        <p><b>Example</b></p>
+        <p>
+            Consider a customer management API that successfully supports creating, retrieving, updating, and deleting customer 
+            records.
+        </p>
+        <p>From a business perspective, all functionality appears correct.</p>
+        <p>However, protocol-level defects may still exist:</p>
+        <ul>
+            <li>Unsupported HTTP methods return incorrect status codes.</li>
+            <li>OPTIONS requests are not handled correctly.</li>
+            <li>Content-Type validation is missing.</li>
+            <li>Invalid Accept headers are ignored.</li>
+            <li>Cache-Control directives are absent or inconsistent <a class="footnote" href="#_ftn10" id="_ftnref10">[10]</a>.</li>
+            <li>Authentication failures return incorrect responses.</li>
+            <li>Idempotent operations behave inconsistently when repeated.</li>
+        </ul>
+        <p>
+            A common anti-pattern is to consider protocol behavior the responsibility of frameworks, gateways, or infrastructure 
+            components and therefore exclude it from testing activities.
+        </p>
+        <p>
+            As a result, testing focuses exclusively on business workflows while protocol-level defects remain undiscovered until 
+            they impact integrations, client applications, automated systems, or production environments.
+        </p>
+        <p>
+            The API may satisfy business requirements while simultaneously violating the protocol expectations of its consumers.
+        </p>
+        <p><b>Testing Guidance</b></p>
+        <p>Protocol-level testing should be performed alongside business functionality testing.</p>
+        <p>Testing should include verification of:</p>
+        <ul>
+            <li>HTTP method handling</li>
+            <li>OPTIONS requests</li>
+            <li>HEAD requests</li>
+            <li>Content-Type validation</li>
+            <li>Accept header handling</li>
+            <li>Response headers</li>
+            <li>Authentication protocol behavior</li>
+            <li>Caching directives</li>
+            <li>Content negotiation</li>
+            <li>Idempotency guarantees</li>
+            <li>Error response consistency</li>
+            <li>Protocol compliance across endpoints</li>
+        </ul>
+        <p>
+            Testing should also verify that the same operation behaves consistently regardless of how many times it is executed when 
+            protocol specifications require such behavior.</p>
+        <p>
+            The objective is not merely to confirm that business functionality works. The objective is to verify that the API behaves 
+            as a predictable and standards-compliant protocol implementation.
+        </p>
+        <p>
+            From a testing perspective, a business function that works correctly but violates its underlying protocol contract should 
+            still be considered defective.
+        </p>
+
+        <h3>10. EVERY DEFECT FOUND IN PRODUCTION SHOULD BECOME A REUSABLE API TEST</h3>
+        <p><b>Explanation</b></p>
+        <p>
+            No testing strategy can guarantee the discovery of every defect before release.
+        </p>
+        <p>
+            Despite code reviews, automated testing, manual testing, monitoring, and quality assurance processes, some defects will 
+            inevitably escape into production environments. The critical question is not whether defects will occur, but whether the 
+            organization learns from them.
+        </p>
+        <p>
+            A production defect represents evidence that a previously untested assumption existed within the system. Once such an 
+            assumption has been exposed, allowing the same defect category to reappear represents a failure of the testing process 
+            rather than a failure of the software itself.
+        </p>
+        <p>
+            For this reason, every significant production defect should result in a reusable test that permanently verifies the 
+            associated behavior <a class="footnote" href="#_ftn6" id="_ftnref6">[6]</a>.
+        </p>
+        <p>
+            The objective is not merely to fix defects. The objective is to continuously expand the system's ability to detect 
+            similar defects in the future.
+        </p>
+        <p><b>Example</b></p>
+        <p>
+            Consider an API that unexpectedly returns a 500 Internal Server Error when receiving a malformed request.
+        </p>
+        <p>
+            The immediate response is to identify the root cause, implement a fix, deploy the correction, and restore normal 
+            operation.
+        </p>
+        <p>A common anti-pattern is to stop at this point.</p>
+        <p>
+            The defect is fixed, the incident is closed, and the organization moves on without introducing any mechanism to detect 
+            the same failure in future releases.
+        </p>
+        <p>
+            Months later, a seemingly unrelated change reintroduces the defect. Because no automated or repeatable verification 
+            exists, the issue reaches production again.
+        </p>
+        <p>
+            A similar pattern can be observed with authorization defects, protocol handling issues, performance failures, 
+            pagination problems, input validation weaknesses, and security-related incidents. The underlying defect may be corrected 
+            repeatedly while the organization fails to preserve the knowledge gained from the original failure.
+        </p>
+        <p>
+            In such environments, the same categories of defects tend to reappear over time despite previous remediation efforts.
+        </p>
+        <p><b>Testing Guidance</b></p>
+        <p>For every significant production defect, testing activities should include:</p>
+        <ul>
+            <li>Identification of the triggering conditions</li>
+            <li>Creation of a reproducible test scenario</li>
+            <li>Verification of the implemented fix</li>
+            <li>Integration of the test into the regular testing process</li>
+            <li>Preservation of the test for future releases</li>
+        </ul>
+        <p>Particular attention should be given to defects involving:</p>
+        <ul>
+            <li>Authorization failures</li>
+            <li>Input validation failures</li>
+            <li>Protocol violations</li>
+            <li>Performance incidents</li>
+            <li>Resource exhaustion conditions</li>
+            <li>Security-related defects</li>
+            <li>Data integrity issues</li>
+            <li>Integration failures</li>
+        </ul>
+        <p>
+            Testing teams should periodically review production incidents to identify recurring defect categories and determine 
+            whether appropriate test coverage exists.
+        </p>
+        <p>
+            The objective is not merely to verify that a defect has been fixed. The objective is to ensure that the same defect 
+            cannot silently return.
+        </p>
+        <p>
+            From a testing perspective, a production defect that is fixed but never transformed into a reusable test remains only 
+            partially resolved.
+        </p>
+        <h3>Conclusion</h3>
+        <p>
+            Modern software systems increasingly depend on APIs as their primary mechanism for communication, integration, and 
+            data exchange. As a result, API failures often have consequences that extend far beyond individual applications and 
+            directly impact reliability, security, scalability, and business operations.
+        </p>
+        <p>
+            This paper presented ten practical rules for API testing derived from recurring failure patterns observed across 
+            real-world systems. The rules are intentionally concise, implementation-agnostic, and applicable to both manual and 
+            automated testing approaches.
+        </p>
+        <p>
+            The objective of these rules is not to replace existing testing methodologies, but to highlight a small number of 
+            testing principles that consistently expose high-impact defects. While no set of rules can guarantee software quality, 
+            systematic application of these principles can significantly reduce the likelihood of common API failures reaching production 
+            environments.
+        </p>
+        <p>
+            Most API incidents are not caused by unknown problems. They are caused by known problems that were never tested.
+        </p>
+
+        <p class="meta-bottom">
+            [Liudas Jankauskas homepage: <a href="https://qaontime.com">qaontime.com</a>]<br>
+            [More research: <a href="https://qaontime.com/research">qaontime.com/research</a>]
+        </p>
+
+        <h3>References</h3>
+        <div class="footnotes">
+            <hr>
+            <ol>
+                <li><a id="_ftn1" href="#_ftnref1">[1]</a> G. J. Holzmann, “The Power of 10: Rules for Developing Safety-Critical Code,” <em>Computer</em>, vol. 39, no. 6, pp. 95–99, June 2006. doi: <a href="https://doi.org/10.1109/MC.2006.212" target="_blank">https://doi.org/10.1109/MC.2006.212</a></li>
+                <li><a id="_ftn2" href="#_ftnref2">[2]</a> R. Fielding, M. Nottingham, and J. Reschke, “HTTP Semantics,” STD 97, RFC 9110, Internet Engineering Task Force, June 2022. doi: <a href="https://doi.org/10.17487/RFC9110" target="_blank">https://doi.org/10.17487/RFC9110</a></li>
+                <li><a id="_ftn3" href="#_ftnref3">[3]</a> ISO/IEC/IEEE 29119-1:2022, <em>Software and Systems Engineering — Software Testing — Part 1: General Concepts</em>, 2nd ed., International Organization for Standardization, 2022. Available: <a href="https://www.iso.org/standard/81291.html?utm_source=chatgpt.com" target="_blank">https://www.iso.org/standard/81291.html</a></li>
+                <li><a id="_ftn4" href="#_ftnref4">[4]</a> OWASP Foundation, <em>OWASP API Security Top 10 — 2023</em>, 2023. Available: <a href="https://owasp.org/API-Security/editions/2023/en/0x00-header/?utm_source=chatgpt.com" target="_blank">https://owasp.org/API-Security/editions/2023/en/0x00-header/</a></li>
+                <li><a id="_ftn5" href="#_ftnref5">[5]</a> Z. Hatfield-Dodds and D. Dygalo, “Deriving Semantics-Aware Fuzzers from Web API Schemas,” in <em>Proceedings of the 2022 IEEE/ACM 44th International Conference on Software Engineering: Companion Proceedings</em>, pp. 345–346, 2022. doi: <a href="https://doi.org/10.1145/3510454.3528637" target="_blank">https://doi.org/10.1145/3510454.3528637</a></li>
+                <li><a id="_ftn6" href="#_ftnref6">[6]</a> J. Humble and D. Farley, <em>Continuous Delivery: Reliable Software Releases through Build, Test, and Deployment Automation</em>. Addison-Wesley Professional, 2010. ISBN 978-0-321-60191-9.</li>
+                <li><a id="_ftn7" href="#_ftnref7">[7]</a> Postman, <em>2025 State of the API Report</em>, 2025. Available: <a href="https://www.postman.com/state-of-api/2025/?utm_source=chatgpt.com" target="_blank">https://www.postman.com/state-of-api/2025/</a></li>
+                <li><a id="_ftn8" href="#_ftnref8">[8]</a> M. Nottingham and R. Fielding, “Additional HTTP Status Codes,” RFC 6585, April 2012. doi: <a href="https://doi.org/10.17487/RFC6585" target="_blank">https://doi.org/10.17487/RFC6585</a></li>
+                <li><a id="_ftn9" href="#_ftnref9">[9]</a> M. Nottingham, E. Wilde, and S. Dalal, “Problem Details for HTTP APIs,” RFC 9457, July 2023. doi: <a href="https://doi.org/10.17487/RFC9457" target="_blank">https://doi.org/10.17487/RFC9457</a></li>
+                <li><a id="_ftn10" href="#_ftnref10">[10]</a> R. Fielding, M. Nottingham, and J. Reschke, “HTTP Caching,” STD 98, RFC 9111, June 2022. doi: <a href="https://doi.org/10.17487/RFC9111" target="_blank">https://doi.org/10.17487/RFC9111</a></li>
+            </ol>
+        </div>
+    </div>
+</body>
+
+</html>
