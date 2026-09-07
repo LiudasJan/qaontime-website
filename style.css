@@ -491,3 +491,53 @@ h2 {
   font-size: 12px;
   color: var(--text-muted);
 }
+
+/* Research page */
+
+.research-page {
+  max-width: 820px;
+}
+
+.research-page h1 {
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.1;
+  margin: 0 0 14px;
+}
+
+.research-list {
+  margin-top: 36px;
+  border-top: 1px solid var(--border);
+}
+
+.research-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.research-item h2 {
+  font-size: 18px;
+  margin: 0 0 6px;
+}
+
+.research-item p {
+  margin: 0 0 8px;
+  color: var(--text-muted);
+  font-size: 14px;
+  max-width: 620px;
+}
+
+.research-item .text-link,
+.research-item > .small-note {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+@media (max-width: 700px) {
+  .research-item {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

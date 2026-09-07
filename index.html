@@ -21,12 +21,24 @@
         <a href="#hero">About</a>
         <a href="#focus">What I do</a>
         <a href="#rentgen">Rentgen</a>
+        <a href="#qa-notebook">QA Notebook</a>
         <a href="#training">Training</a>
+        <a href="/research">Research</a>
         <a href="#contact">Contact</a>
       </nav>
       <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
     </div>
   </header>
+
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-KJBT697CX9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-KJBT697CX9');
+</script>
 
   <!-- HERO -->
   <main>
@@ -49,6 +61,9 @@
             </a>
             <a href="https://www.linkedin.com/in/liudas-jankauskas/" class="btn outline" target="_blank" rel="noopener">
               Message on LinkedIn
+            </a>
+            <a href="qa-notebook.html" class="btn outline">
+              QA Notebook
             </a>
             <a href="https://itknyga.lt" class="btn outline" target="_blank" rel="noopener">
               Book Author
@@ -132,32 +147,73 @@
     <section id="rentgen" class="section section-alt">
       <div class="container two-col">
         <div>
-          <h2>Tool I built: Rentgen.io</h2>
+          <h2>Rentgen</h2>
           <p class="section-sub">
-            I don’t wait for the “perfect” tool. When something is missing, I build it.
-            That’s how <strong>Rentgen</strong> appeared.
+            Rentgen is an API testing tool focused on automated exploratory testing and rapid defect discovery.
           </p>
+
           <div class="card soft-card">
-            <h3>Rentgen – see what you should test, not just what you can send</h3>
             <p>
-              Rentgen takes a single API request and generates multiple tests around it:
-              boundaries, weird values, enums, ranges and negative cases.
+              Rentgen generates and executes large numbers of validation, robustness and protocol-level tests from a single API request.
             </p>
+
             <p>
-              It’s designed for testers and developers who care about <em>risk</em>,
-              not about spending their day clicking through a pretty REST client.
+              The project originated from practical API testing work and is closely related to the Automation Before Automation (ABA) concept described in the research section.
             </p>
-            <p class="small-note">
-              <strong>Built by me.</strong> Free local version, with a clear line
-              between open-source and commercial use.
+
+            <p>
+              Rentgen is designed to complement existing testing frameworks by helping teams discover issues before investing in long-term automated test suites.
             </p>
-            <a href="https://rentgen.io" class="btn primary" target="_blank" rel="noopener">
+
+            <a href="https://rentgen.io"
+              class="btn primary"
+              target="_blank"
+              rel="noopener">
               Visit rentgen.io
             </a>
           </div>
         </div>
+      </div>
+    </section>
 
+    <!-- QA NOTEBOOK -->
+    <section id="qa-notebook" class="section">
+      <div class="container two-col">
+        <div>
+          <p class="eyebrow">QA Notebook · Hardcover · 162 pages</p>
+          <h2>Think. Test. Question. Write it down.</h2>
+          <p class="section-sub">
+            A practical notebook for software testers who prefer to think on paper.
+            Structured testing sessions on the left, open space for handwritten notes on the right,
+            plus testing heuristics, investigation prompts and practical QA insights throughout.
+          </p>
 
+          <div class="card soft-card">
+            <p>
+              This is not a blank notebook with “QA” printed on the cover. It includes
+              <strong>What Am I Testing?</strong> sessions, <strong>Bug Investigation</strong> pages,
+              SFDIPOT, non-functional testing reminders, API testing, decision table testing,
+              state transition testing and short prompts designed to trigger better test ideas.
+            </p>
+            <div class="hero-actions">
+              <a href="qa-notebook.html" class="btn primary">See the QA Notebook</a>
+              <a href="https://www.amazon.com/dp/B0HH6MNG4Z" class="btn outline" target="_blank" rel="noopener">
+                Buy on Amazon
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <aside class="side-box" style="text-align:center;">
+          <a href="qa-notebook.html" aria-label="Open QA Notebook page">
+            <img src="assets/qa-notebook.jpg"
+                 alt="QA Notebook by Liudas Jankauskas cover"
+                 style="display:block;width:min(100%,320px);margin:0 auto;border-radius:8px;box-shadow:0 18px 38px rgba(15,23,42,.18);" />
+          </a>
+          <p class="small-note" style="margin-top:14px;">
+            Hardcover · Black & white interior · Made for real testing sessions
+          </p>
+        </aside>
       </div>
     </section>
 
