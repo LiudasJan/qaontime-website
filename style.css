@@ -382,6 +382,38 @@ h2 {
 
 /* Rentgen section */
 
+#rentgen .two-col {
+  align-items: stretch;
+  row-gap: 0;
+}
+
+#rentgen .two-col > div {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 3;
+}
+
+#rentgen .soft-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#rentgen .soft-card .btn {
+  margin-top: auto;
+}
+
+@media (max-width: 900px) {
+  #rentgen .two-col {
+    row-gap: 32px;
+  }
+
+  #rentgen .two-col > div {
+    display: block;
+    grid-row: auto;
+  }
+}
+
 .soft-card {
   background: #ffffff;
 }
